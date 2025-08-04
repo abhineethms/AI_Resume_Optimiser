@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Test Form</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .form-section {
+      margin-bottom: 30px;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    h2 {
+      margin-top: 0;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    input, textarea {
+      margin-bottom: 15px;
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    pre {
+      background-color: #f5f5f5;
+      padding: 10px;
+      overflow: auto;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h1>API Test Form</h1>
+  
+  <div class="form-section">
+    <h2>Parse Resume</h2>
+    <form id="resumeForm" enctype="multipart/form-data">
+      <label for="resume">Upload Resume (PDF/DOCX):</label>
+      <input type="file" id="resume" name="resume" accept=".pdf,.docx" required>
+      <button type="submit">Parse Resume</button>
+    </form>
+    <h3>Response:</h3>
+    <pre id="resumeResponse">Results will appear here...</pre>
+  </div>
+
+  <div class="form-section">
+    <h2>Parse Job Description (File)</h2>
+    <form id="jobFileForm" enctype="multipart/form-data">
+      <label for="jobDescription">Upload Job Description (PDF/DOCX/TXT):</label>
+      <input type="file" id="jobDescription" name="jobDescription" accept=".pdf,.docx,.txt" required>
+      <button type="submit">Parse Job Description</button>
+    </form>
+    <h3>Response:</h3>
+    <pre id="jobFileResponse">Results will appear here...</pre>
+  </div>
+
+  <div class="form-section">
+    <h2>Parse Job Description (Text)</h2>
+    <form id="jobTextForm">
+      <label for="jobText">Job Description Text:</label>
+      <textarea id="jobText" name="text" rows="10" required></textarea>
+      <button type="submit">Parse Job Text</button>
+    </form>
+    <h3>Response:</h3>
+    <pre id="jobTextResponse">Results will appear here...</pre>
+  </div>
+
+  <div class="form-section">
+    <h2>Compare Resume with Job</h2>
+    <form id="compareForm">
+      <label for="resumeId">Resume ID:</label>
+      <input type="text" id="resumeId" name="resumeId" required>
+      <label for="jobId">Job Description ID:</label>
+      <input type="text" id="jobId" name="jobId" required>
+      <button type="submit">Compare</button>
+    </form>
+    <h3>Response:</h3>
+    <pre id="compareResponse">Results will appear here...</pre>
+  </div>
+
+  <script>
+    // Parse Resume
+    document.getElementById('resumeForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const formData = new FormData();
+      const fileField = document.querySelector('#resume');
+      
+      formData.append('resume', fileField.files[0]);
+      
+      try {
+        const response = await fetch('http://localhost:5000/api/resume/parse', {
+          method: 'POST',
+          body: formData,
+        });
+        
+        const result = await response.json();
+        document.getElementById('resumeResponse').textContent = JSON.stringify(result, null, 2);
+      } catch (error) {
+        document.getElementById('resumeResponse').textContent = 'Error: ' + error.message;
+      }
+    });
+
+    // Parse Job Description (File)
+    document.getElementById('jobFileForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const formData = new FormData();
+      const fileField = document.querySelector('#jobDescription');
+      
+      formData.append('jobDescription', fileField.files[0]);
+      
+      try {
+        const response = await fetch('http://localhost:5000/api/job/parse/file', {
+          method: 'POST',
+          body: formData,
+        });
+        
+        const result = await response.json();
+        document.getElementById('jobFileResponse').textContent = JSON.stringify(result, null, 2);
+      } catch (error) {
+        document.getElementById('jobFileResponse').textContent = 'Error: ' + error.message;
+      }
+    });
+
+    // Parse Job Description (Text)
+    document.getElementById('jobTextForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const data = {
+        text: formData.get('text')
+      };
+      
+      try {
+        const response = await fetch('http://localhost:5000/api/job/parse/text', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        });
+        
+        const result = await response.json();
+        document.getElementById('jobTextResponse').textContent = JSON.stringify(result, null, 2);
+      } catch (error) {
+        document.getElementById('jobTextResponse').textContent = 'Error: ' + error.message;
+      }
+    });
+
+    // Compare Resume with Job
+    document.getElementById('compareForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const data = {
+        resumeId: formData.get('resumeId'),
+        jobId: formData.get('jobId')
+      };
+      
+      try {
+        const response = await fetch('http://localhost:5000/api/match/compare', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        });
+        
+        const result = await response.json();
+        document.getElementById('compareResponse').textContent = JSON.stringify(result, null, 2);
+      } catch (error) {
+        document.getElementById('compareResponse').textContent = 'Error: ' + error.message;
+      }
+    });
+  </script>
+</body>
+</html>

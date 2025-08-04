@@ -1,0 +1,78 @@
+import axios from 'axios';
+import { auth } from '../firebase/firebaseConfig';
+
+/**
+ * Create an Axios instance with interceptors configured to automatically
+ * attach Firebase ID tokens to outgoing requests
+ */
+const axiosWithAuth = axios.create({
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000',
+});
+
+// Add a request interceptor to attach Firebase tokens
+axiosWithAuth.interceptors.request.use(
+  async (config) => {
+    try {
+      // Get the current user from Firebase Auth
+      const user = auth.currentUser;
+      
+      // Log for debugging
+      console.log('axiosWithAuth interceptor - user:', user ? 'Authenticated' : 'Not authenticated');
+      
+      // If user is authenticated, get a fresh token and add to headers
+      if (user) {
+        const token = await user.getIdToken(true);
+        
+        // Log token for debugging (first 10 chars only)
+        console.log('Token being sent (first 10 chars):', token.substring(0, 10) + '...');
+        
+        // Set the Authorization header with Bearer prefix
+        config.headers.Authorization = `Bearer ${token}`;
+        
+        // Log the full headers for debugging
+        console.log('Request headers:', JSON.stringify(config.headers));
+      }
+      
+      return config;
+    } catch (error) {
+      console.error('Error adding auth token to request:', error);
+      return Promise.reject(error);
+    }
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Add a response interceptor to handle auth errors
+axiosWithAuth.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  async (error) => {
+    const originalRequest = error.config;
+    
+    // If error is 401 Unauthorized and we haven't already retried
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      
+      try {
+        // Force refresh the token
+        const user = auth.currentUser;
+        if (user) {
+          const newToken = await user.getIdToken(true);
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          
+          // Retry the request with new token
+          return axiosWithAuth(originalRequest);
+        }
+      } catch (refreshError) {
+        console.error('Error refreshing auth token:', refreshError);
+      }
+    }
+    
+    return Promise.reject(error);
+  }
+);
+
+export default axiosWithAuth;
