@@ -6,18 +6,8 @@ const path = require('path');
 // Import controllers
 const { parseResume } = require('../controllers/resumeController');
 
-// Configure multer for file uploads
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    // Use /tmp directory in production (Vercel), uploads/ in development
-    const uploadPath = process.env.NODE_ENV === 'production' ? '/tmp' : 'uploads/';
-    cb(null, uploadPath);
-  },
-  filename: function (req, file, cb) {
-    cb(null, `${Date.now()}-${file.originalname}`);
-  }
-});
+// Configure multer for S3 upload (memory storage)
+const storage = multer.memoryStorage();
 
 // Filter for PDF and DOCX files only
 const fileFilter = (req, file, cb) => {
@@ -38,15 +28,6 @@ const upload = multer({
     fileSize: 5 * 1024 * 1024 // 5MB limit
   }
 });
-
-// Create uploads directory if it doesn't exist
-// Create uploads directory if it doesn't exist
-const fs = require('fs');
-const uploadPath = process.env.NODE_ENV === 'production' ? '/tmp' : 'uploads/';
-if (!fs.existsSync(uploadPath) && process.env.NODE_ENV !== 'production') {
-  // No need to create /tmp in production as it already exists in Vercel
-  fs.mkdirSync(uploadPath);
-}
 
 // Route to parse resume
 router.post('/parse', upload.single('resume'), parseResume);

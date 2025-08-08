@@ -83,6 +83,30 @@ const ResumeSchema = new mongoose.Schema({
   fileType: {
     type: String
   },
+  // S3 storage metadata
+  s3Key: {
+    type: String,
+    required: true
+  },
+  s3Location: {
+    type: String,
+    required: true
+  },
+  s3Bucket: {
+    type: String,
+    required: true
+  },
+  fileSize: {
+    type: Number
+  },
+  uploadDate: {
+    type: Date,
+    default: Date.now
+  },
+  lastAccessed: {
+    type: Date,
+    default: Date.now
+  },
   createdAt: {
     type: Date,
     default: Date.now

@@ -30,6 +30,33 @@ const JobDescriptionSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  // S3 storage metadata (optional for text-based job descriptions)
+  fileName: {
+    type: String
+  },
+  fileType: {
+    type: String
+  },
+  s3Key: {
+    type: String
+  },
+  s3Location: {
+    type: String
+  },
+  s3Bucket: {
+    type: String
+  },
+  fileSize: {
+    type: Number
+  },
+  uploadDate: {
+    type: Date,
+    default: Date.now
+  },
+  lastAccessed: {
+    type: Date,
+    default: Date.now
+  },
   createdAt: {
     type: Date,
     default: Date.now

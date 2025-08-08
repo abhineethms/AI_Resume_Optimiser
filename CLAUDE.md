@@ -41,12 +41,17 @@ This application uses a **hybrid Firebase-MongoDB authentication system**:
 ### File Processing Pipeline
 The core feature follows this workflow:
 ```
-File Upload (Multer) → Text Extraction (pdf-parse/mammoth) → AI Analysis (OpenAI) → Structured Storage (MongoDB)
+File Upload (Multer Memory) → S3 Storage → Text Extraction (pdf-parse/mammoth) → AI Analysis (OpenAI) → Structured Storage (MongoDB + S3 metadata)
 ```
 
+**Cloud Storage**: 
+- Files uploaded to AWS S3 for persistent storage
+- Multer memory storage for serverless compatibility
+- S3 metadata stored in MongoDB for user history/dashboard
+
 **Text Extraction**: 
-- PDFs use `pdf-parse` library
-- DOCX files use `mammoth` for raw text extraction  
+- PDFs use `pdf-parse` library with file buffers
+- DOCX files use `mammoth` for raw text extraction from buffers
 - 5MB file size limit enforced
 
 **AI Processing**:
@@ -99,6 +104,10 @@ Uses Redux Toolkit with normalized slice pattern:
 - `OPENAI_API_KEY` - AI processing
 - `FIREBASE_PROJECT_ID`, `FIREBASE_PRIVATE_KEY`, `FIREBASE_CLIENT_EMAIL` - Firebase Admin
 - `JWT_SECRET` - Token signing
+- `AWS_ACCESS_KEY_ID` - AWS S3 access key
+- `AWS_SECRET_ACCESS_KEY` - AWS S3 secret key
+- `AWS_REGION` - AWS region (default: us-east-1)
+- `AWS_S3_BUCKET` - S3 bucket name for file storage
 
 **Frontend (.env)**:
 - `REACT_APP_FIREBASE_*` - Firebase client config
@@ -126,5 +135,6 @@ Uses Redux Toolkit with normalized slice pattern:
 ### Deployment Considerations
 - Vercel configuration for serverless deployment included
 - Stateless architecture suitable for horizontal scaling
-- File uploads handle both local development (`/uploads`) and production (`/tmp`) paths
+- AWS S3 cloud storage eliminates filesystem dependencies
 - Environment-aware configurations throughout codebase
+- S3 integration enables user file history and dashboard features
