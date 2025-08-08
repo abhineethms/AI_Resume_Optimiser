@@ -6,6 +6,7 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from './firebase/firebaseConfig';
 import { setUser } from './features/auth/authSlice';
 import axiosWithAuth from './utils/axiosWithAuth';
+import { GuestProvider } from './contexts/GuestContext';
 
 // Layout components
 import Header from './components/layout/Header';
@@ -13,6 +14,14 @@ import Header from './components/layout/Header';
 
 // Auth components
 import ProtectedRoute from './components/auth/ProtectedRoute';
+
+// Dashboard components
+import DashboardLayout from './components/dashboard/DashboardLayout';
+import DashboardOverview from './components/dashboard/DashboardOverview';
+import ResumeManagement from './components/dashboard/ResumeManagement';
+import JobManagement from './components/dashboard/JobManagement';
+import MatchHistory from './components/dashboard/MatchHistory';
+import UserProfile from './components/dashboard/UserProfile';
 
 // Page components
 import HomePage from './pages/HomePage';
@@ -123,7 +132,7 @@ const App = () => {
   }
   
   return (
-    <>
+    <GuestProvider>
       <Header />
       <Routes>
         {/* Public routes */}
@@ -133,10 +142,20 @@ const App = () => {
         
         {/* Protected routes - require authentication */}
         <Route element={<ProtectedRoute />}>
-          <Route path="/dashboard" element={getContainer(<DashboardPage />)} />
+          <Route path="/dashboard" element={<DashboardLayout />}>
+            <Route index element={<DashboardOverview />} />
+            <Route path="resumes" element={<ResumeManagement />} />
+            <Route path="jobs" element={<JobManagement />} />
+            <Route path="matches" element={<MatchHistory />} />
+            <Route path="history" element={<MatchHistory />} />
+            <Route path="analytics" element={<MatchHistory />} />
+            <Route path="profile" element={<UserProfile />} />
+          </Route>
+          {/* Backward compatibility - redirect old dashboard to new structure */}
+          <Route path="/dashboard-old" element={getContainer(<DashboardPage />)} />
         </Route>
         
-        {/* Application workflow routes */}
+        {/* Application workflow routes - available to both guest and authenticated users */}
         <Route path="/resume" element={getContainer(<ResumeParserPage />)} />
         <Route path="/job-match" element={getContainer(<JobMatcherPage />)} />
         <Route path="/match-results" element={getContainer(<MatchResultsPage />)} />
@@ -148,7 +167,7 @@ const App = () => {
         <Route path="*" element={getContainer(<NotFoundPage />)} />
       </Routes>
       {/* <Footer /> */}
-    </>
+    </GuestProvider>
   );
 };
 

@@ -70,10 +70,7 @@ if (process.env.NODE_ENV !== 'test') {
 // MongoDB Connection
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/resume-optimizer', {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/resume-optimizer');
     console.log('MongoDB connected successfully');
   } catch (error) {
     console.error('MongoDB connection error:', error);
@@ -91,6 +88,7 @@ const matchRoutes = require('./routes/matchRoutes');
 const authRoutes = require('./routes/authRoutes');
 const historyRoutes = require('./routes/historyRoutes');
 const keywordRoutes = require('./routes/keywordRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
 
 // Use Routes
 app.use('/api/resume', resumeRoutes);
@@ -99,6 +97,7 @@ app.use('/api/match', matchRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/history', historyRoutes);
 app.use('/api/keywords', keywordRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // Basic route
 app.get('/', (req, res) => {
