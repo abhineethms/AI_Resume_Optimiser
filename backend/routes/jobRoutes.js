@@ -6,17 +6,10 @@ const path = require('path');
 // Import controllers
 const { parseJobDescription } = require('../controllers/jobController');
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/');
-  },
-  filename: function (req, file, cb) {
-    cb(null, `${Date.now()}-${file.originalname}`);
-  }
-});
+// Configure multer for S3 upload (memory storage)
+const storage = multer.memoryStorage();
 
-// Filter for PDF and DOCX files only
+// Filter for PDF, DOCX, and TXT files
 const fileFilter = (req, file, cb) => {
   const allowedFileTypes = ['.pdf', '.docx', '.txt'];
   const ext = path.extname(file.originalname).toLowerCase();
@@ -35,12 +28,6 @@ const upload = multer({
     fileSize: 5 * 1024 * 1024 // 5MB limit
   }
 });
-
-// Create uploads directory if it doesn't exist
-const fs = require('fs');
-if (!fs.existsSync('uploads')) {
-  fs.mkdirSync('uploads');
-}
 
 // Routes to parse job description
 router.post('/parse/file', upload.single('jobDescription'), parseJobDescription);

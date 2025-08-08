@@ -1,9 +1,9 @@
-const fs = require('fs');
 const path = require('path');
 const pdfParse = require('pdf-parse');
 const mammoth = require('mammoth');
 const Resume = require('../models/Resume');
 const openai = require('../config/openai');
+const { uploadToS3, downloadAndExtractText } = require('../utils/s3Utils');
 
 /**
  * Parse a resume file (PDF or DOCX) and extract structured information
@@ -23,19 +23,27 @@ const parseResume = async (req, res) => {
     }
 
     console.log(`[Resume Parser] File received: ${req.file.originalname}, Size: ${req.file.size} bytes`);
-    const filePath = req.file.path;
     const fileExtension = path.extname(req.file.originalname).toLowerCase();
     
-    // Extract text from file based on file type
+    // Generate userId (you can modify this to use actual authenticated user ID)
+    const userId = req.user?.uid || 'anonymous';
+    
+    // Upload file to S3
+    console.log('[Resume Parser] Uploading file to S3');
+    const s3Result = await uploadToS3(
+      req.file.buffer, 
+      req.file.originalname, 
+      userId, 
+      'resume'
+    );
+    
+    // Extract text from file buffer based on file type
     let text = '';
     
     if (fileExtension === '.pdf') {
       console.log('[Resume Parser] Processing PDF file');
-      // Parse PDF
-      const dataBuffer = fs.readFileSync(filePath);
-      console.log(`[Resume Parser] PDF buffer size: ${dataBuffer.length} bytes`);
       try {
-        const pdfData = await pdfParse(dataBuffer);
+        const pdfData = await pdfParse(req.file.buffer);
         text = pdfData.text;
         console.log(`[Resume Parser] PDF parsed successfully, extracted ${text.length} characters`);
       } catch (pdfError) {
@@ -44,9 +52,8 @@ const parseResume = async (req, res) => {
       }
     } else if (fileExtension === '.docx') {
       console.log('[Resume Parser] Processing DOCX file');
-      // Parse DOCX
       try {
-        const result = await mammoth.extractRawText({ path: filePath });
+        const result = await mammoth.extractRawText({ buffer: req.file.buffer });
         text = result.value;
         console.log(`[Resume Parser] DOCX parsed successfully, extracted ${text.length} characters`);
       } catch (docxError) {
@@ -70,6 +77,7 @@ const parseResume = async (req, res) => {
       // Create a new resume document in the database
       console.log('[Resume Parser] Creating resume document in database');
       const resume = new Resume({
+        user: req.user?._id || null,
         name: structuredData.name,
         email: structuredData.email,
         phone: structuredData.phone,
@@ -85,17 +93,20 @@ const parseResume = async (req, res) => {
         publications: structuredData.publications || [],
         rawText: text,
         fileName: req.file.originalname,
-        fileType: fileExtension
+        fileType: fileExtension,
+        // S3 metadata
+        s3Key: s3Result.key,
+        s3Location: s3Result.location,
+        s3Bucket: s3Result.bucket,
+        fileSize: req.file.size,
+        uploadDate: new Date(),
+        lastAccessed: new Date()
       });
 
       // Save the resume to the database
       console.log('[Resume Parser] Saving resume to database');
       await resume.save();
       console.log(`[Resume Parser] Resume saved with ID: ${resume._id}`);
-
-      // Delete the uploaded file after processing
-      fs.unlinkSync(filePath);
-      console.log(`[Resume Parser] Deleted temporary file: ${filePath}`);
 
       // Return the structured resume data
       console.log('[Resume Parser] Sending successful response to client');

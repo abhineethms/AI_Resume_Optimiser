@@ -8,6 +8,68 @@ const openai = new OpenAI({
 });
 
 /**
+ * Validate and fix keyword strength ratings for consistency
+ * @param {Array} keywordsWithStrength - Keywords with frequency and strength data
+ * @returns {Array} - Validated and corrected keywords
+ */
+const validateKeywordStrength = (keywordsWithStrength) => {
+  return keywordsWithStrength.map(keyword => {
+    let correctedStrength = keyword.strength;
+    
+    // Fix logical inconsistencies
+    if (keyword.resumeCount === 0 && keyword.strength !== 'Missing') {
+      correctedStrength = 'Missing';
+      console.warn(`Fixed inconsistency: ${keyword.word} had strength "${keyword.strength}" but resumeCount is 0`);
+    }
+    
+    if (keyword.resumeCount > 0 && keyword.strength === 'Missing') {
+      correctedStrength = keyword.resumeCount >= 2 ? 'Strong' : 'Weak';
+      console.warn(`Fixed inconsistency: ${keyword.word} had strength "Missing" but resumeCount is ${keyword.resumeCount}`);
+    }
+    
+    return {
+      ...keyword,
+      strength: correctedStrength
+    };
+  });
+};
+
+/**
+ * Validate clustering results to ensure all keywords are assigned
+ * @param {Array} originalKeywords - Original keywords list
+ * @param {Object} clusterData - Cluster assignment data
+ * @returns {Object} - Validated cluster data
+ */
+const validateClustering = (originalKeywords, clusterData) => {
+  const assignedKeywords = [];
+  const clusters = clusterData || {};
+  
+  // Collect all assigned keywords
+  Object.values(clusters).forEach(clusterKeywords => {
+    if (Array.isArray(clusterKeywords)) {
+      assignedKeywords.push(...clusterKeywords);
+    }
+  });
+  
+  // Find unassigned keywords
+  const unassignedKeywords = originalKeywords.filter(keyword => 
+    !assignedKeywords.includes(keyword)
+  );
+  
+  // Assign unassigned keywords to "Software Engineering" cluster
+  if (unassignedKeywords.length > 0) {
+    console.warn(`Found unassigned keywords: ${unassignedKeywords.join(', ')}. Assigning to Software Engineering.`);
+    
+    if (!clusters['Software Engineering']) {
+      clusters['Software Engineering'] = [];
+    }
+    clusters['Software Engineering'].push(...unassignedKeywords);
+  }
+  
+  return clusters;
+};
+
+/**
  * Extract keyword candidates from job description text using compromise NLP
  * @param {string} jdText - Raw job description text
  * @returns {Array} - Array of potential keywords
@@ -62,13 +124,22 @@ const refineKeywordsWithGPT = async (rawKeywords) => {
     You are an expert ATS (Applicant Tracking System) consultant who specializes in identifying important keywords
     for job applications. I'll provide you with a list of potential keywords extracted from a job description.
     
-    Please analyze these keywords and:
-    1. Remove duplicates and near-duplicates (e.g., "React" and "React.js")
-    2. Normalize variations (choose the most common professional form)
-    3. Remove generic terms that aren't specific skills or qualifications
-    4. Return ONLY the cleaned list of important keywords as a JSON array of strings
+    CRITICAL ANTI-HALLUCINATION RULES:
+    1. ONLY include keywords that were present in the original extracted list
+    2. NEVER add new keywords or create variations not in the input
+    3. NEVER infer or assume skills that weren't explicitly extracted
+    4. Be CONSERVATIVE - when in doubt, exclude rather than include
     
-    Raw keyword list: ${rawKeywords.join(', ')}
+    Please analyze these keywords and:
+    1. Remove duplicates and near-duplicates (e.g., "React" and "React.js" - keep only one)
+    2. Normalize variations (choose the most common professional form from the existing options)
+    3. Remove generic terms that aren't specific skills or qualifications
+    4. Remove non-technical terms like "team", "communication", "experience"
+    5. Return ONLY the cleaned list of important technical keywords as a JSON array of strings
+    
+    SOURCE KEYWORDS (DO NOT ADD ANY KEYWORDS NOT IN THIS LIST): ${rawKeywords.join(', ')}
+    
+    VALIDATION: Every keyword in your response MUST be present in the source list above.
     
     Respond ONLY with a JSON array of strings, like this:
     ["Keyword1", "Keyword2", "Keyword3"]
@@ -143,19 +214,23 @@ const countKeywordFrequencies = (resumeText, jdText, keywords) => {
  * @returns {Array} - Keywords with strength ratings
  */
 const rateKeywordStrengthWithGPT = async (resumeText, jdText, keywordsWithFreq) => {
-  // Extract just the keywords for the prompt
-  const keywords = keywordsWithFreq.map(k => k.word);
+  // Extract keywords and their frequency data for the prompt
+  const keywordDetails = keywordsWithFreq.map(k => `${k.word} (Resume mentions: ${k.resumeCount}, JD mentions: ${k.jdCount})`);
   
   const prompt = `
     You are an expert ATS (Applicant Tracking System) consultant who evaluates resumes against job descriptions.
-    You'll receive a resume text, job description text, and a list of important keywords.
+    You'll receive resume text, job description text, and keywords with their frequency counts.
     
-    Please analyze how strongly each keyword is represented in the resume compared to the job description.
+    CRITICAL CONSISTENCY RULES:
+    1. If resumeCount > 0, strength CANNOT be "Missing"
+    2. If resumeCount = 0, strength MUST be "Missing"
+    3. Higher resumeCount generally indicates stronger presence
+    4. Consider context quality, not just frequency
     
     Rate each keyword as:
-    - "Strong": The resume demonstrates significant expertise or experience with this keyword
-    - "Weak": The keyword is mentioned but with limited context or experience
-    - "Missing": The keyword is not effectively present in the resume
+    - "Strong": Resume demonstrates significant expertise/experience (resumeCount ≥ 2 OR 1 mention with strong context)
+    - "Weak": Keyword mentioned but limited context (resumeCount = 1 with weak context)
+    - "Missing": Keyword not present in resume (resumeCount = 0)
     
     Resume Text:
     ${resumeText.substring(0, 2000)}... (truncated)
@@ -163,7 +238,10 @@ const rateKeywordStrengthWithGPT = async (resumeText, jdText, keywordsWithFreq) 
     Job Description Text:
     ${jdText.substring(0, 2000)}... (truncated)
     
-    Keywords: ${keywords.join(', ')}
+    Keywords with frequency data:
+    ${keywordDetails.join('\n')}
+    
+    VALIDATION: Ensure your ratings are consistent with the frequency counts provided.
     
     Return ONLY a JSON object with keyword ratings, like this:
     {
@@ -190,21 +268,25 @@ const rateKeywordStrengthWithGPT = async (resumeText, jdText, keywordsWithFreq) 
       const strengthRatings = JSON.parse(jsonMatch[0]);
       
       // Merge strength ratings with the keyword frequency data
-      return keywordsWithFreq.map(keyword => ({
+      const keywordsWithStrength = keywordsWithFreq.map(keyword => ({
         ...keyword,
         strength: strengthRatings[keyword.word] || 'Missing'
       }));
+      
+      // Validate and fix any inconsistencies
+      return validateKeywordStrength(keywordsWithStrength);
     }
     
     // Fallback if no clear JSON is found
     return keywordsWithFreq;
   } catch (error) {
     console.error('Error rating keyword strengths with GPT:', error);
-    // Return original data if GPT fails
-    return keywordsWithFreq.map(keyword => ({
+    // Return original data with validation if GPT fails
+    const fallbackData = keywordsWithFreq.map(keyword => ({
       ...keyword,
       strength: keyword.resumeCount > 0 ? 'Weak' : 'Missing'
     }));
+    return validateKeywordStrength(fallbackData);
   }
 };
 
@@ -220,20 +302,35 @@ const groupKeywordsIntoClustersWithGPT = async (keywordsWithStrength) => {
   const prompt = `
     You are an expert in job skills categorization. I'll provide a list of keywords from a job description.
     
-    Please group these keywords into 5-8 logical skill clusters (e.g., Frontend, Backend, DevOps, Management).
+    CLUSTERING CONSTRAINTS:
+    1. Use ONLY standard, well-known technology cluster names
+    2. NEVER create new or unusual cluster names
+    3. Every keyword MUST be assigned to exactly one cluster
+    4. Do NOT leave any keywords unassigned
+    5. Be conservative - use broader clusters rather than creating narrow ones
     
-    Keywords: ${keywords.join(', ')}
+    Standard cluster names to choose from:
+    - "Frontend Development"
+    - "Backend Development" 
+    - "Database Management"
+    - "Cloud and DevOps"
+    - "Programming Languages"
+    - "Software Engineering"
+    - "Data Analysis"
+    - "Mobile Development"
+    - "Machine Learning"
+    - "Project Management"
+    - "Quality Assurance"
+    
+    Keywords to cluster: ${keywords.join(', ')}
+    
+    VALIDATION: Every keyword from the input list must appear in exactly one cluster.
     
     Return ONLY a JSON object with:
-    1. clusters: An object where keys are cluster names and values are arrays of keywords belonging to that cluster
-    2. No explanations or additional text
-    
-    Example response format:
     {
       "clusters": {
-        "Frontend": ["React", "CSS", "HTML"],
-        "Backend": ["Node.js", "Express", "MongoDB"],
-        "DevOps": ["AWS", "Docker", "Kubernetes"]
+        "Cluster Name": ["keyword1", "keyword2"],
+        "Another Cluster": ["keyword3", "keyword4"]
       }
     }
   `;
@@ -256,6 +353,9 @@ const groupKeywordsIntoClustersWithGPT = async (keywordsWithStrength) => {
     if (jsonMatch) {
       const parsed = JSON.parse(jsonMatch[0]);
       clusterData = parsed.clusters || {};
+      
+      // Validate clustering to ensure all keywords are assigned
+      clusterData = validateClustering(keywords, clusterData);
     }
     
     // Get cluster names
