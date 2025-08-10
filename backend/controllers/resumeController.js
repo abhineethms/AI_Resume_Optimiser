@@ -25,15 +25,15 @@ const parseResume = async (req, res) => {
     console.log(`[Resume Parser] File received: ${req.file.originalname}, Size: ${req.file.size} bytes`);
     const fileExtension = path.extname(req.file.originalname).toLowerCase();
     
-    // Generate userId (you can modify this to use actual authenticated user ID)
-    const userId = req.user?.uid || 'anonymous';
+    // Generate identifier for S3 upload (user ID or session ID)
+    const uploadIdentifier = req.user?.firebaseUid || req.sessionId || 'anonymous';
     
     // Upload file to S3
     console.log('[Resume Parser] Uploading file to S3');
     const s3Result = await uploadToS3(
       req.file.buffer, 
       req.file.originalname, 
-      userId, 
+      uploadIdentifier, 
       'resume'
     );
     
@@ -76,8 +76,11 @@ const parseResume = async (req, res) => {
 
       // Create a new resume document in the database
       console.log('[Resume Parser] Creating resume document in database');
+      console.log('[Resume Parser] Session type:', req.sessionType, 'Session identifier:', req.sessionIdentifier);
+      
       const resume = new Resume({
         user: req.user?._id || null,
+        sessionId: req.sessionId || null,
         name: structuredData.name,
         email: structuredData.email,
         phone: structuredData.phone,
@@ -278,6 +281,97 @@ const extractResumeData = async (text) => {
   }
 };
 
+/**
+ * Get all resumes for a user or session
+ * @route GET /api/resume/
+ * @access Public (with session support)
+ */
+const getUserResumes = async (req, res) => {
+  try {
+    let query = {};
+    
+    if (req.user) {
+      // Authenticated user
+      query.user = req.user._id;
+    } else if (req.sessionId) {
+      // Guest session
+      query.sessionId = req.sessionId;
+      query.user = null;
+    } else {
+      // No user or session
+      return res.status(200).json({
+        success: true,
+        data: []
+      });
+    }
+    
+    const resumes = await Resume.find(query)
+      .sort({ createdAt: -1 })
+      .select('title fileName skills experience education summary createdAt s3Key s3Url');
+    
+    res.status(200).json({
+      success: true,
+      data: resumes
+    });
+  } catch (error) {
+    console.error('Error getting user resumes:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error retrieving resumes',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * Get a specific resume by ID
+ * @route GET /api/resume/:id
+ * @access Public (with session support)
+ */
+const getResumeById = async (req, res) => {
+  try {
+    const resumeId = req.params.id;
+    let query = { _id: resumeId };
+    
+    if (req.user) {
+      // Authenticated user - check ownership
+      query.user = req.user._id;
+    } else if (req.sessionId) {
+      // Guest session - check session ownership
+      query.sessionId = req.sessionId;
+      query.user = null;
+    } else {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied - no session or authentication'
+      });
+    }
+    
+    const resume = await Resume.findOne(query);
+    
+    if (!resume) {
+      return res.status(404).json({
+        success: false,
+        message: 'Resume not found or access denied'
+      });
+    }
+    
+    res.status(200).json({
+      success: true,
+      data: resume
+    });
+  } catch (error) {
+    console.error('Error getting resume by ID:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error retrieving resume',
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
-  parseResume
+  parseResume,
+  getUserResumes,
+  getResumeById
 };

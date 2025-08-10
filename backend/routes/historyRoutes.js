@@ -1,18 +1,18 @@
 const express = require('express');
 const router = express.Router();
 const { getUserHistory, getUserResume, getUserJobDescription, getUserMatch } = require('../controllers/historyController');
-const { protect } = require('../middlewares/authMiddleware');
+const { requireAuth } = require('../middlewares/sessionAuth');
 
 // Get user's history
-router.get('/', protect, getUserHistory);
+router.get('/', requireAuth, getUserHistory);
 
 // Get user's resume by ID
-router.get('/resume/:id', protect, getUserResume);
+router.get('/resume/:id', requireAuth, getUserResume);
 
 // Get user's job description by ID
-router.get('/job/:id', protect, getUserJobDescription);
+router.get('/job/:id', requireAuth, getUserJobDescription);
 
 // Get user's match by ID
-router.get('/match/:id', protect, getUserMatch);
+router.get('/match/:id', requireAuth, getUserMatch);
 
 module.exports = router;

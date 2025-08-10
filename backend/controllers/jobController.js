@@ -75,6 +75,7 @@ const parseJobDescription = async (req, res) => {
     // Create a new job description document in the database
     const jobDescription = new JobDescription({
       user: req.user?._id || null,
+      sessionId: req.sessionId || null,
       title: structuredData.title,
       company: structuredData.company,
       location: structuredData.location,
@@ -208,6 +209,97 @@ const extractJobData = async (text) => {
   }
 };
 
+/**
+ * Get all job descriptions for a user or session
+ * @route GET /api/job/
+ * @access Public (with session support)
+ */
+const getUserJobs = async (req, res) => {
+  try {
+    let query = {};
+    
+    if (req.user) {
+      // Authenticated user
+      query.user = req.user._id;
+    } else if (req.sessionId) {
+      // Guest session
+      query.sessionId = req.sessionId;
+      query.user = null;
+    } else {
+      // No user or session
+      return res.status(200).json({
+        success: true,
+        data: []
+      });
+    }
+    
+    const jobs = await JobDescription.find(query)
+      .sort({ createdAt: -1 })
+      .select('title company location jobType skills requirements responsibilities benefits createdAt s3Key s3Url');
+    
+    res.status(200).json({
+      success: true,
+      data: jobs
+    });
+  } catch (error) {
+    console.error('Error getting user jobs:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error retrieving job descriptions',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * Get a specific job description by ID
+ * @route GET /api/job/:id
+ * @access Public (with session support)
+ */
+const getJobById = async (req, res) => {
+  try {
+    const jobId = req.params.id;
+    let query = { _id: jobId };
+    
+    if (req.user) {
+      // Authenticated user - check ownership
+      query.user = req.user._id;
+    } else if (req.sessionId) {
+      // Guest session - check session ownership
+      query.sessionId = req.sessionId;
+      query.user = null;
+    } else {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied - no session or authentication'
+      });
+    }
+    
+    const job = await JobDescription.findOne(query);
+    
+    if (!job) {
+      return res.status(404).json({
+        success: false,
+        message: 'Job description not found or access denied'
+      });
+    }
+    
+    res.status(200).json({
+      success: true,
+      data: job
+    });
+  } catch (error) {
+    console.error('Error getting job by ID:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error retrieving job description',
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
-  parseJobDescription
+  parseJobDescription,
+  getUserJobs,
+  getJobById
 };

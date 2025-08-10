@@ -10,11 +10,8 @@ import {
   Grid,
   Typography,
   Paper,
-  Divider,
-  Chip,
   Alert,
   CircularProgress,
-  Stack,
   LinearProgress,
   List,
   ListItem,
@@ -26,13 +23,11 @@ import {
 import {
   Check as MatchIcon,
   Close as MissingIcon,
-  Star as PreferredIcon,
-  StarBorder as OptionalIcon,
   TrendingUp as StrengthIcon,
   TrendingDown as WeaknessIcon,
   CompareArrows as CompareIcon,
 } from '@mui/icons-material';
-import { compareResumeJob, reset } from '../redux/slices/matchSlice';
+import { compareResumeJob } from '../redux/slices/matchSlice';
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import ProcessStepper from '../components/ui/ProcessStepper';

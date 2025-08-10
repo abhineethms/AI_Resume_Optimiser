@@ -11,6 +11,8 @@ import {
 } from 'firebase/auth';
 import { auth } from '../../firebase/firebaseConfig';
 import axiosWithAuth from '../../utils/axiosWithAuth';
+import sessionManager from '../../utils/sessionManager';
+import { migrateGuestDataToUser } from '../../utils/guestMigration';
 
 // Register user with email and password
 export const register = createAsyncThunk(
@@ -26,20 +28,32 @@ export const register = createAsyncThunk(
       // Send email verification
       await sendEmailVerification(userCredential.user);
       
-      // Get ID token
-      const token = await userCredential.user.getIdToken();
+      // Get ID token for verification
+      await userCredential.user.getIdToken();
       
       // Verify token with backend
       await axiosWithAuth.post('/api/auth/verify-token');
       
-      // Return user data
-      return {
+      // Prepare user data
+      const userData = {
         uid: userCredential.user.uid,
         email: userCredential.user.email,
         displayName: name,
         photoURL: userCredential.user.photoURL,
         emailVerified: userCredential.user.emailVerified
       };
+      
+      // Attempt to migrate guest data
+      try {
+        const migrationResult = await migrateGuestDataToUser(userData);
+        console.log('Migration result:', migrationResult);
+      } catch (migrationError) {
+        console.log('Migration failed, but registration succeeded:', migrationError);
+        // Don't fail registration if migration fails
+      }
+      
+      // Return user data
+      return userData;
     } catch (error) {
       let errorMessage = 'Registration failed';
       
@@ -69,19 +83,31 @@ export const login = createAsyncThunk(
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       
-      // Get ID token
-      const token = await userCredential.user.getIdToken();
+      // Get ID token for verification
+      await userCredential.user.getIdToken();
       
       // Verify token with backend
       await axiosWithAuth.post('/api/auth/verify-token');
       
-      return {
+      // Prepare user data
+      const userData = {
         uid: userCredential.user.uid,
         email: userCredential.user.email,
         displayName: userCredential.user.displayName,
         photoURL: userCredential.user.photoURL,
         emailVerified: userCredential.user.emailVerified
       };
+      
+      // Attempt to migrate guest data if user is logging in
+      try {
+        const migrationResult = await migrateGuestDataToUser(userData);
+        console.log('Login migration result:', migrationResult);
+      } catch (migrationError) {
+        console.log('Migration failed, but login succeeded:', migrationError);
+        // Don't fail login if migration fails
+      }
+      
+      return userData;
     } catch (error) {
       let errorMessage = 'Login failed';
       
@@ -113,19 +139,31 @@ export const googleLogin = createAsyncThunk(
       const provider = new GoogleAuthProvider();
       const userCredential = await signInWithPopup(auth, provider);
       
-      // Get ID token
-      const token = await userCredential.user.getIdToken();
+      // Get ID token for verification
+      await userCredential.user.getIdToken();
       
       // Verify token with backend
       await axiosWithAuth.post('/api/auth/verify-token');
       
-      return {
+      // Prepare user data
+      const userData = {
         uid: userCredential.user.uid,
         email: userCredential.user.email,
         displayName: userCredential.user.displayName,
         photoURL: userCredential.user.photoURL,
         emailVerified: userCredential.user.emailVerified
       };
+      
+      // Attempt to migrate guest data if user is logging in
+      try {
+        const migrationResult = await migrateGuestDataToUser(userData);
+        console.log('Google login migration result:', migrationResult);
+      } catch (migrationError) {
+        console.log('Migration failed, but Google login succeeded:', migrationError);
+        // Don't fail login if migration fails
+      }
+      
+      return userData;
     } catch (error) {
       return rejectWithValue(error.message || 'Google sign-in failed');
     }
@@ -158,12 +196,20 @@ export const resetPassword = createAsyncThunk(
   }
 );
 
-// Logout user
+// Logout user - comprehensive cleanup
 export const logout = createAsyncThunk(
   'auth/logout',
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, dispatch }) => {
     try {
+      // Sign out from Firebase
       await signOut(auth);
+      
+      // Clear all session data (localStorage, etc.)
+      sessionManager.clearSession();
+      
+      // Dispatch action to clear all Redux state
+      dispatch(clearAllAppData());
+      
       return null;
     } catch (error) {
       return rejectWithValue(error.message || 'Failed to logout');
@@ -194,6 +240,15 @@ const authSlice = createSlice({
     clearPasswordResetStatus(state) {
       state.passwordResetSent = false;
       state.error = null;
+    },
+    clearAllAppData(state) {
+      // Reset auth state to initial values
+      state.user = null;
+      state.userDetails = null;
+      state.isAuthenticated = false;
+      state.isLoading = false;
+      state.error = null;
+      state.passwordResetSent = false;
     }
   },
   extraReducers: (builder) => {
@@ -287,6 +342,6 @@ const authSlice = createSlice({
   }
 });
 
-export const { setUser, clearError, clearPasswordResetStatus } = authSlice.actions;
+export const { setUser, clearError, clearPasswordResetStatus, clearAllAppData } = authSlice.actions;
 
 export default authSlice.reducer;

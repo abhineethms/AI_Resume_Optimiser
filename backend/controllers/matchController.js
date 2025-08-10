@@ -36,6 +36,8 @@ const compareResumeWithJob = async (req, res) => {
 
     // Create a new match document in the database
     const match = new Match({
+      user: req.user?._id || null,
+      sessionId: req.sessionId || null,
       resume: resumeId,
       jobDescription: jobId,
       matchPercentage: comparisonResult.matchPercentage,

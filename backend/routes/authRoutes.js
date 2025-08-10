@@ -4,9 +4,10 @@ const {
   verifyFirebaseToken, 
   getUserProfile,
   updateUserProfile,
-  getUserDashboard
+  getUserDashboard,
+  migrateGuestData
 } = require('../controllers/authController');
-const { protect } = require('../middlewares/auth');
+const { requireAuth } = require('../middlewares/sessionAuth');
 
 // Firebase authentication route
 router.post('/verify-token', verifyFirebaseToken);
@@ -28,8 +29,9 @@ router.post('/login', (req, res) => {
 });
 
 // Protected routes - authentication required
-router.get('/profile', protect, getUserProfile);
-router.put('/profile', protect, updateUserProfile);
-router.get('/dashboard', protect, getUserDashboard);
+router.get('/profile', requireAuth, getUserProfile);
+router.put('/profile', requireAuth, updateUserProfile);
+router.get('/dashboard', requireAuth, getUserDashboard);
+router.post('/migrate-guest-data', requireAuth, migrateGuestData);
 
 module.exports = router;

@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { auth } from '../firebase/firebaseConfig';
+import sessionManager from './sessionManager';
 
 /**
  * Create an Axios instance with interceptors configured to automatically
@@ -31,6 +32,22 @@ axiosWithAuth.interceptors.request.use(
         
         // Log the full headers for debugging
         console.log('Request headers:', JSON.stringify(config.headers));
+      } else {
+        // For guest users, ensure we have a session and add session ID to headers
+        let sessionData = sessionManager.getSessionData();
+        
+        // Initialize guest session if none exists
+        if (!sessionData?.sessionId) {
+          console.log('No session found, initializing guest session...');
+          sessionData = sessionManager.initGuestSession();
+        }
+        
+        if (sessionData?.sessionId) {
+          config.headers['X-Session-ID'] = sessionData.sessionId;
+          console.log('Guest session ID being sent:', sessionData.sessionId.substring(0, 10) + '...');
+        } else {
+          console.warn('Failed to create guest session ID');
+        }
       }
       
       return config;

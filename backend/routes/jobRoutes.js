@@ -4,7 +4,8 @@ const multer = require('multer');
 const path = require('path');
 
 // Import controllers
-const { parseJobDescription } = require('../controllers/jobController');
+const { parseJobDescription, getUserJobs, getJobById } = require('../controllers/jobController');
+const { optionalAuth } = require('../middlewares/sessionAuth');
 
 // Configure multer for S3 upload (memory storage)
 const storage = multer.memoryStorage();
@@ -29,8 +30,14 @@ const upload = multer({
   }
 });
 
-// Routes to parse job description
-router.post('/parse/file', upload.single('jobDescription'), parseJobDescription);
-router.post('/parse/text', parseJobDescription);
+// Routes to parse job description - supports both authenticated users and guest sessions
+router.post('/parse/file', optionalAuth, upload.single('jobDescription'), parseJobDescription);
+router.post('/parse/text', optionalAuth, parseJobDescription);
+
+// Route to get all user job descriptions - supports both authenticated users and guest sessions
+router.get('/', optionalAuth, getUserJobs);
+
+// Route to get specific job description by ID - supports both authenticated users and guest sessions
+router.get('/:id', optionalAuth, getJobById);
 
 module.exports = router;

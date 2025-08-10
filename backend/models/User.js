@@ -45,15 +45,11 @@ const UserSchema = new mongoose.Schema({
   }],
   jobs: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Job'
+    ref: 'JobDescription'
   }],
   matches: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Match'
-  }],
-  coverLetters: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'CoverLetter'
   }],
   
   // System fields

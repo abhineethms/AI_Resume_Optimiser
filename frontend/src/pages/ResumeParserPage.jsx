@@ -18,14 +18,11 @@ import {
   Alert,
   CircularProgress,
   Stack,
-  TextField,
   Fade,
   Grow,
 } from '@mui/material';
 import {
   CloudUpload as UploadIcon,
-  Check as CheckIcon,
-  Error as ErrorIcon,
   Description as FileIcon,
 } from '@mui/icons-material';
 import { parseResume, reset } from '../redux/slices/resumeSlice';

@@ -34,6 +34,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../../features/auth/authSlice';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '../../firebase/firebaseConfig';
+import sessionManager from '../../utils/sessionManager';
 
 const Header = () => {
   const theme = useTheme();
@@ -50,19 +51,26 @@ const Header = () => {
   // User is logged in if either Firebase or Redux shows them as authenticated
   const isLoggedIn = !!firebaseUser || !!reduxUser;
   
-  // For user display info, prefer Firebase user data
-  const displayName = firebaseUser?.displayName || reduxUser?.displayName || 'User';
-  const photoURL = firebaseUser?.photoURL || reduxUser?.photoURL;
+  // Get session info
+  const sessionData = sessionManager.getSessionData();
+  const isGuestSession = sessionData?.isGuest === true;
+  
+  // For user display info, prefer Firebase user data (unused for now but may be needed for future features)
+  // const displayName = firebaseUser?.displayName || reduxUser?.displayName || 'User';
+  // const photoURL = firebaseUser?.photoURL || reduxUser?.photoURL;
   
   // Log auth state for debugging
   useEffect(() => {
     console.log('Auth State in Header:', { 
       firebaseUser: firebaseUser ? 'Logged in' : 'Not logged in', 
       reduxUser: reduxUser ? 'Logged in' : 'Not logged in',
-      isLoggedIn
+      isLoggedIn,
+      isGuestSession,
+      sessionId: sessionData?.sessionId
     });
-  }, [firebaseUser, reduxUser, isLoggedIn]);
+  }, [firebaseUser, reduxUser, isLoggedIn, isGuestSession, sessionData]);
   
+  // Core app features available to all users (guest and authenticated)
   const navItems = [
     { name: 'Home', path: '/', icon: <HomeIcon /> },
     { name: 'Resume Parser', path: '/resume', icon: <DescriptionIcon /> },
@@ -74,6 +82,8 @@ const Header = () => {
   ];
   
   const handleLogout = () => {
+    // Clear all session data and redirect
+    sessionManager.clearSession();
     dispatch(logout());
     navigate('/');
     if (isMobile) {
@@ -81,9 +91,10 @@ const Header = () => {
     }
   };
   
+  // Authentication-specific items
   const authItems = isLoggedIn 
     ? [
-        { name: 'Dashboard', path: '/dashboard', icon: <DashboardIcon /> },
+        { name: 'Score Board', path: '/dashboard', icon: <DashboardIcon /> },
         { name: 'Logout', path: '#', icon: <LogoutIcon />, onClick: handleLogout },
       ]
     : [
@@ -162,6 +173,28 @@ const Header = () => {
         ))}
       </List>
       <Divider />
+      
+      {/* Guest user encouragement */}
+      {isGuestSession && (
+        <Box sx={{ p: 2, mx: 1, my: 1, borderRadius: 1, backgroundColor: theme.palette.info.light, color: 'white' }}>
+          <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>
+            👋 Guest Mode Active
+          </Typography>
+          <Typography variant="caption" sx={{ display: 'block', mb: 1 }}>
+            Sign up to save your work and access your Score Board!
+          </Typography>
+          <Button 
+            size="small" 
+            variant="contained" 
+            color="secondary" 
+            fullWidth
+            onClick={() => handleNavigation('/register')}
+          >
+            Create Account
+          </Button>
+        </Box>
+      )}
+      
       <List>
         {authItems.map((item) => (
           <ListItem 
@@ -290,7 +323,24 @@ const Header = () => {
                     </Button>
                   ))}
                 </Box>
-                <Box>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  {/* Guest mode indicator for desktop */}
+                  {isGuestSession && (
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        mr: 2, 
+                        px: 1.5, 
+                        py: 0.5, 
+                        borderRadius: 4, 
+                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                        fontSize: '0.75rem'
+                      }}
+                    >
+                      👋 Guest Mode
+                    </Typography>
+                  )}
+                  
                   {authItems.map((item) => (
                     <Button 
                       key={item.name}
