@@ -1,40 +1,24 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import {
-  Box,
-  Button,
-  Container,
-  Typography,
-  Paper,
-  CircularProgress,
-  Alert,
-  Card,
-  CardContent,
-  Grid,
-  Divider,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Chip,
-} from '@mui/material';
-import {
-  ExpandMore as ExpandMoreIcon,
-  Lightbulb as TipIcon,
-  Check as CheckIcon,
-  Warning as WarningIcon,
-  Star as StarIcon,
-  Edit as EditIcon,
-} from '@mui/icons-material';
+  ChevronDown,
+  Lightbulb,
+  Check,
+  AlertTriangle,
+  Star,
+  Edit3,
+  RefreshCw,
+  Target,
+  Award,
+  BookOpen
+} from 'lucide-react';
 import { getResumeFeedback } from '../redux/slices/matchSlice';
 
 const FeedbackPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [expandedAccordion, setExpandedAccordion] = useState(null);
   
   const { currentResume } = useSelector((state) => state.resume);
   const { currentJob } = useSelector((state) => state.job);
@@ -45,6 +29,10 @@ const FeedbackPage = () => {
     isError, 
     message 
   } = useSelector((state) => state.match);
+
+  const toggleAccordion = (index) => {
+    setExpandedAccordion(expandedAccordion === index ? null : index);
+  };
 
   // Ensure we have the necessary data
   useEffect(() => {
@@ -84,259 +72,260 @@ const FeedbackPage = () => {
 
   if (isLoading) {
     return (
-      <Container maxWidth="lg" className="page-container">
-        <Box sx={{ textAlign: 'center', py: 8 }}>
-          <CircularProgress size={60} />
-          <Typography variant="h5" sx={{ mt: 3 }}>
-            Analyzing your resume for improvement opportunities...
-          </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
-            Our AI is identifying ways to enhance your resume for this specific job.
-          </Typography>
-        </Box>
-      </Container>
+      <div className="page-container">
+        <div className="content-container">
+          <div className="text-center py-16">
+            <div className="loading-spinner w-16 h-16 mx-auto mb-6"></div>
+            <h2 className="text-2xl font-bold text-white mb-4">
+              Analyzing your resume for improvement opportunities...
+            </h2>
+            <p className="text-gray-400 max-w-md mx-auto">
+              Our AI is identifying ways to enhance your resume for this specific job.
+            </p>
+          </div>
+        </div>
+      </div>
     );
   }
 
   if (isError) {
     return (
-      <Container maxWidth="lg" className="page-container">
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {message || 'An error occurred while generating resume feedback.'}
-        </Alert>
-        <Box sx={{ textAlign: 'center', mt: 4 }}>
-          <Button 
-            variant="contained" 
-            onClick={handleRegenerateFeedback}
-          >
-            Try Again
-          </Button>
-        </Box>
-      </Container>
+      <div className="page-container">
+        <div className="content-container">
+          <div className="mb-6 p-4 bg-red-900 border border-red-700 rounded-lg text-red-300 flex items-center">
+            <AlertTriangle className="w-5 h-5 mr-3 text-red-400" />
+            <span>{message || 'An error occurred while generating resume feedback.'}</span>
+          </div>
+          <div className="text-center">
+            <button 
+              onClick={handleRegenerateFeedback}
+              className="btn-primary flex items-center justify-center mx-auto"
+            >
+              <RefreshCw className="w-5 h-5 mr-2" />
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
     );
   }
 
   if (!feedback) {
     return (
-      <Container maxWidth="lg" className="page-container">
-        <Box sx={{ textAlign: 'center', py: 8 }}>
-          <CircularProgress size={60} />
-          <Typography variant="h5" sx={{ mt: 3 }}>
-            Preparing your feedback...
-          </Typography>
-        </Box>
-      </Container>
+      <div className="page-container">
+        <div className="content-container">
+          <div className="text-center py-16">
+            <div className="loading-spinner w-16 h-16 mx-auto mb-6"></div>
+            <h2 className="text-2xl font-bold text-white mb-4">
+              Preparing your feedback...
+            </h2>
+          </div>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Container maxWidth="lg" className="page-container">
-      <Typography variant="h4" component="h1" className="section-title" gutterBottom>
-        Resume Improvement Feedback
-      </Typography>
-      <Typography variant="body1" paragraph>
-        Based on your match with {currentJob.title} at {currentJob.company}, here are personalized suggestions to improve your resume.
-      </Typography>
+    <div className="page-container">
+      <div className="content-container">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-white mb-4">
+            Resume <span className="text-gradient">Improvement Feedback</span>
+          </h1>
+          <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+            Based on your match with <span className="text-neon-400 font-medium">{currentJob.title}</span> at <span className="text-electric-400 font-medium">{currentJob.company}</span>, here are personalized suggestions to improve your resume.
+          </p>
+        </div>
 
-      {/* Overall Feedback Summary */}
-      <Paper elevation={3} sx={{ p: 4, mb: 4, borderRadius: 2 }}>
-        <Typography variant="h5" gutterBottom>
-          Summary
-        </Typography>
-        <Typography variant="body1" paragraph>
-          {feedback.summary}
-        </Typography>
-        <Box sx={{ mt: 3 }}>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={4}>
-              <Card variant="outlined" sx={{ height: '100%', bgcolor: 'success.light' }}>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom sx={{ color: 'success.dark' }}>
-                    Strengths
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: 'success.dark' }}>
-                    {feedback.strengthsCount} key strengths identified
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <Card variant="outlined" sx={{ height: '100%', bgcolor: 'warning.light' }}>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom sx={{ color: 'warning.dark' }}>
-                    Improvement Areas
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: 'warning.dark' }}>
-                    {feedback.improvementsCount} areas to enhance
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <Card variant="outlined" sx={{ height: '100%', bgcolor: 'info.light' }}>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom sx={{ color: 'info.dark' }}>
-                    Suggestions
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: 'info.dark' }}>
-                    {feedback.suggestionsCount} actionable recommendations
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
-        </Box>
-      </Paper>
+        {/* Overall Feedback Summary */}
+        <div className="card p-6 mb-8">
+          <div className="flex items-center mb-6">
+            <Target className="w-6 h-6 text-neon-400 mr-3" />
+            <h2 className="text-2xl font-bold text-white">Summary</h2>
+          </div>
+          <p className="text-gray-300 leading-relaxed mb-6">
+            {feedback.summary}
+          </p>
+          
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="bg-neon-900 border border-neon-700 rounded-lg p-4 text-center">
+              <Check className="w-8 h-8 text-neon-400 mx-auto mb-2" />
+              <h3 className="text-lg font-semibold text-neon-300 mb-1">Strengths</h3>
+              <p className="text-neon-400 text-sm">
+                {feedback.strengthsCount || feedback.strengths?.length || 0} key strengths identified
+              </p>
+            </div>
+            
+            <div className="bg-yellow-900 border border-yellow-700 rounded-lg p-4 text-center">
+              <AlertTriangle className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
+              <h3 className="text-lg font-semibold text-yellow-300 mb-1">Improvement Areas</h3>
+              <p className="text-yellow-400 text-sm">
+                {feedback.improvementsCount || feedback.improvementAreas?.length || 0} areas to enhance
+              </p>
+            </div>
+            
+            <div className="bg-electric-900 border border-electric-700 rounded-lg p-4 text-center">
+              <Lightbulb className="w-8 h-8 text-electric-400 mx-auto mb-2" />
+              <h3 className="text-lg font-semibold text-electric-300 mb-1">Suggestions</h3>
+              <p className="text-electric-400 text-sm">
+                {feedback.suggestionsCount || feedback.recommendations?.length || 0} actionable recommendations
+              </p>
+            </div>
+          </div>
+        </div>
 
-      {/* Strengths Section */}
-      <Paper elevation={3} sx={{ p: 4, mb: 4, borderRadius: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <CheckIcon color="success" sx={{ mr: 1 }} />
-          <Typography variant="h5">
-            Resume Strengths
-          </Typography>
-        </Box>
-        <Divider sx={{ mb: 3 }} />
-        <List>
-          {feedback.strengths.map((strength, index) => (
-            <ListItem key={index} alignItems="flex-start" sx={{ mb: 2, bgcolor: 'success.light', borderRadius: 1, py: 1 }}>
-              <ListItemIcon>
-                <StarIcon color="success" />
-              </ListItemIcon>
-              <ListItemText
-                primary={strength.title}
-                secondary={strength.description}
-                primaryTypographyProps={{ fontWeight: 'bold' }}
-              />
-            </ListItem>
-          ))}
-        </List>
-      </Paper>
+        {/* Strengths Section */}
+        {feedback.strengths && feedback.strengths.length > 0 && (
+          <div className="card p-6 mb-8">
+            <div className="flex items-center mb-6">
+              <Check className="w-6 h-6 text-neon-400 mr-3" />
+              <h2 className="text-2xl font-bold text-white">Resume Strengths</h2>
+            </div>
+            <div className="border-b border-dark-700 mb-6"></div>
+            
+            <div className="space-y-4">
+              {feedback.strengths.map((strength, index) => (
+                <div key={index} className="bg-neon-900 border border-neon-700 rounded-lg p-4 flex items-start">
+                  <Star className="w-5 h-5 text-neon-400 mr-3 mt-1 flex-shrink-0" />
+                  <div>
+                    <h3 className="font-semibold text-neon-300 mb-2">{strength.title}</h3>
+                    <p className="text-neon-400 text-sm">{strength.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
-      {/* Improvement Areas Section */}
-      <Paper elevation={3} sx={{ p: 4, mb: 4, borderRadius: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <WarningIcon color="warning" sx={{ mr: 1 }} />
-          <Typography variant="h5">
-            Areas for Improvement
-          </Typography>
-        </Box>
-        <Divider sx={{ mb: 3 }} />
-        <List>
-          {feedback.improvementAreas.map((area, index) => (
-            <Accordion key={index} sx={{ mb: 2 }}>
-              <AccordionSummary
-                expandIcon={<ExpandMoreIcon />}
-                sx={{ bgcolor: 'warning.light' }}
-              >
-                <Typography fontWeight="bold">{area.title}</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Typography variant="body2" paragraph>
-                  {area.description}
-                </Typography>
-                <Typography variant="subtitle2" gutterBottom>
-                  Why this matters:
-                </Typography>
-                <Typography variant="body2" paragraph>
-                  {area.impact}
-                </Typography>
-                <Box sx={{ mt: 2 }}>
-                  <Chip 
-                    icon={<TipIcon />} 
-                    label="Suggestion" 
-                    color="primary" 
-                    size="small" 
-                    sx={{ mr: 1 }} 
-                  />
-                  <Typography variant="body2" sx={{ mt: 1 }}>
-                    {area.suggestion}
-                  </Typography>
-                </Box>
-              </AccordionDetails>
-            </Accordion>
-          ))}
-        </List>
-      </Paper>
+        {/* Improvement Areas Section */}
+        {feedback.improvementAreas && feedback.improvementAreas.length > 0 && (
+          <div className="card p-6 mb-8">
+            <div className="flex items-center mb-6">
+              <AlertTriangle className="w-6 h-6 text-yellow-400 mr-3" />
+              <h2 className="text-2xl font-bold text-white">Areas for Improvement</h2>
+            </div>
+            <div className="border-b border-dark-700 mb-6"></div>
+            
+            <div className="space-y-4">
+              {feedback.improvementAreas.map((area, index) => (
+                <div key={index} className="border border-dark-600 rounded-lg overflow-hidden">
+                  <button
+                    onClick={() => toggleAccordion(index)}
+                    className="w-full bg-yellow-900 border-b border-yellow-700 p-4 text-left flex items-center justify-between hover:bg-yellow-800 transition-colors duration-200"
+                  >
+                    <span className="font-semibold text-yellow-300">{area.title}</span>
+                    <ChevronDown 
+                      className={`w-5 h-5 text-yellow-400 transition-transform duration-200 ${
+                        expandedAccordion === index ? 'rotate-180' : ''
+                      }`} 
+                    />
+                  </button>
+                  
+                  {expandedAccordion === index && (
+                    <div className="bg-dark-800 p-4 space-y-4 fade-in">
+                      <p className="text-gray-300 leading-relaxed">
+                        {area.description}
+                      </p>
+                      
+                      <div>
+                        <h4 className="font-semibold text-yellow-300 mb-2">Why this matters:</h4>
+                        <p className="text-gray-400 text-sm leading-relaxed">
+                          {area.impact}
+                        </p>
+                      </div>
+                      
+                      <div className="bg-dark-700 border border-dark-600 rounded-lg p-3">
+                        <div className="flex items-center mb-2">
+                          <Lightbulb className="w-4 h-4 text-electric-400 mr-2" />
+                          <span className="text-sm font-medium text-electric-400">Suggestion</span>
+                        </div>
+                        <p className="text-gray-300 text-sm">
+                          {area.suggestion}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
-      {/* Specific Recommendations Section */}
-      <Paper elevation={3} sx={{ p: 4, mb: 4, borderRadius: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <TipIcon color="info" sx={{ mr: 1 }} />
-          <Typography variant="h5">
-            Actionable Recommendations
-          </Typography>
-        </Box>
-        <Divider sx={{ mb: 3 }} />
-        
-        <Grid container spacing={3}>
-          {feedback.recommendations.map((recommendation, index) => (
-            <Grid item xs={12} md={6} key={index}>
-              <Card variant="outlined" sx={{ height: '100%' }}>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    {recommendation.title}
-                  </Typography>
-                  <Typography variant="body2" paragraph>
+        {/* Specific Recommendations Section */}
+        {feedback.recommendations && feedback.recommendations.length > 0 && (
+          <div className="card p-6 mb-8">
+            <div className="flex items-center mb-6">
+              <Lightbulb className="w-6 h-6 text-electric-400 mr-3" />
+              <h2 className="text-2xl font-bold text-white">Actionable Recommendations</h2>
+            </div>
+            <div className="border-b border-dark-700 mb-6"></div>
+            
+            <div className="grid md:grid-cols-2 gap-6">
+              {feedback.recommendations.map((recommendation, index) => (
+                <div key={index} className="bg-dark-800 border border-dark-600 rounded-lg p-6">
+                  <div className="flex items-start mb-4">
+                    <Award className="w-5 h-5 text-electric-400 mr-2 mt-1 flex-shrink-0" />
+                    <h3 className="font-semibold text-white">{recommendation.title}</h3>
+                  </div>
+                  
+                  <p className="text-gray-400 leading-relaxed mb-4">
                     {recommendation.description}
-                  </Typography>
-                  <Box sx={{ mt: 2, p: 1, bgcolor: 'info.light', borderRadius: 1 }}>
-                    <Typography variant="subtitle2" gutterBottom>
-                      Example:
-                    </Typography>
-                    <Typography variant="body2" sx={{ fontStyle: 'italic' }}>
+                  </p>
+                  
+                  <div className="bg-electric-900 border border-electric-700 rounded-lg p-3">
+                    <h4 className="text-sm font-medium text-electric-300 mb-2">Example:</h4>
+                    <p className="text-electric-400 text-sm italic">
                       {recommendation.example}
-                    </Typography>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      </Paper>
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
-      {/* Keywords to Include Section */}
-      <Paper elevation={3} sx={{ p: 4, mb: 4, borderRadius: 2 }}>
-        <Typography variant="h5" gutterBottom>
-          Keywords to Include
-        </Typography>
-        <Typography variant="body1" paragraph>
-          Consider incorporating these keywords in your resume to improve ATS matching and relevance:
-        </Typography>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-          {feedback.keywordsToInclude.map((keyword, index) => (
-            <Chip 
-              key={index} 
-              label={keyword} 
-              color="primary" 
-              variant="outlined" 
-            />
-          ))}
-        </Box>
-      </Paper>
+        {/* Keywords to Include Section */}
+        {feedback.keywordsToInclude && feedback.keywordsToInclude.length > 0 && (
+          <div className="card p-6 mb-8">
+            <div className="flex items-center mb-6">
+              <BookOpen className="w-6 h-6 text-neon-400 mr-3" />
+              <h2 className="text-2xl font-bold text-white">Keywords to Include</h2>
+            </div>
+            <p className="text-gray-400 leading-relaxed mb-6">
+              Consider incorporating these keywords in your resume to improve ATS matching and relevance:
+            </p>
+            
+            <div className="flex flex-wrap gap-2">
+              {feedback.keywordsToInclude.map((keyword, index) => (
+                <span key={index} className="badge badge-info">
+                  {keyword}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
 
-      {/* Next Steps */}
-      <Box sx={{ mt: 4, textAlign: 'center' }}>
-        <Button 
-          variant="contained" 
-          color="primary" 
-          size="large"
-          onClick={() => navigate('/resume')}
-          startIcon={<EditIcon />}
-          sx={{ mr: 2 }}
-        >
-          Update Resume
-        </Button>
-        <Button 
-          variant="outlined" 
-          color="primary" 
-          size="large"
-          onClick={() => navigate('/dashboard')}
-        >
-          Go to Dashboard
-        </Button>
-      </Box>
-    </Container>
+        {/* Next Steps */}
+        <div className="text-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button 
+              onClick={() => navigate('/resume')}
+              className="btn-primary flex items-center justify-center"
+            >
+              <Edit3 className="w-5 h-5 mr-2" />
+              Update Resume
+            </button>
+            <button 
+              onClick={() => navigate('/dashboard')}
+              className="btn-secondary flex items-center justify-center"
+            >
+              Go to Dashboard
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

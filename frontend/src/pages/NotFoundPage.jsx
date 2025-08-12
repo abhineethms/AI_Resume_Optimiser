@@ -1,98 +1,48 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  Container, 
-  Typography, 
-  Button, 
-  Box, 
-  Paper,
-  Stack
-} from '@mui/material';
-import { 
-  SentimentDissatisfied as SadFaceIcon,
-  Home as HomeIcon,
-  ArrowBack as BackIcon
-} from '@mui/icons-material';
+import { Home, ArrowLeft, Frown } from 'lucide-react';
 
 const NotFoundPage = () => {
   return (
-    <Container maxWidth="md">
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          minHeight: '80vh'
-        }}
-      >
-        <Paper 
-          elevation={3}
-          sx={{ 
-            p: 5, 
-            borderRadius: 2,
-            textAlign: 'center',
-            width: '100%'
-          }}
-        >
-          <SadFaceIcon 
-            sx={{ 
-              fontSize: 100,
-              color: 'text.secondary',
-              mb: 2
-            }} 
-          />
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="max-w-md w-full">
+        <div className="card p-8 text-center">
+          <div className="flex justify-center mb-6">
+            <Frown className="w-24 h-24 text-gray-400" />
+          </div>
           
-          <Typography 
-            variant="h1" 
-            component="h1" 
-            sx={{ 
-              fontWeight: 'bold',
-              color: 'primary.main',
-              mb: 2
-            }}
-          >
+          <h1 className="text-8xl font-bold text-gradient mb-4">
             404
-          </Typography>
+          </h1>
           
-          <Typography variant="h4" component="h2" gutterBottom>
+          <h2 className="text-3xl font-bold text-white mb-4">
             Page Not Found
-          </Typography>
+          </h2>
           
-          <Typography variant="body1" color="text.secondary" paragraph sx={{ mb: 4 }}>
+          <p className="text-gray-400 leading-relaxed mb-8">
             Oops! The page you are looking for doesn't exist or has been moved.
-          </Typography>
+          </p>
           
-          <Stack 
-            direction={{ xs: 'column', sm: 'row' }}
-            spacing={2}
-            justifyContent="center"
-          >
-            <Button
-              variant="contained"
-              color="primary"
-              size="large"
-              startIcon={<HomeIcon />}
-              component={Link}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
               to="/"
-              sx={{ px: 4, py: 1 }}
+              className="btn-primary flex items-center justify-center"
             >
+              <Home className="w-5 h-5 mr-2" />
               Go Home
-            </Button>
+            </Link>
             
-            <Button
-              variant="outlined"
-              color="primary"
-              size="large"
-              startIcon={<BackIcon />}
+            <button
               onClick={() => window.history.back()}
-              sx={{ px: 4, py: 1 }}
+              className="btn-secondary flex items-center justify-center"
             >
+              <ArrowLeft className="w-5 h-5 mr-2" />
               Go Back
-            </Button>
-          </Stack>
-        </Paper>
-      </Box>
-    </Container>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

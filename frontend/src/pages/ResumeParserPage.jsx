@@ -1,30 +1,26 @@
- import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Container,
-  Grid,
-  Typography,
-  Paper,
-  List,
-  ListItem,
-  ListItemText,
-  Divider,
-  Chip,
-  Alert,
-  CircularProgress,
-  Stack,
-  Fade,
-  Grow,
-} from '@mui/material';
-import {
-  CloudUpload as UploadIcon,
-  Description as FileIcon,
-} from '@mui/icons-material';
+  Upload,
+  FileText,
+  X,
+  CheckCircle,
+  AlertCircle,
+  ArrowRight,
+  RefreshCw,
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  Briefcase,
+  GraduationCap,
+  Award,
+  Star,
+  ExternalLink,
+  Calendar,
+  Building
+} from 'lucide-react';
 import { parseResume, reset } from '../redux/slices/resumeSlice';
 import { clearCurrentMatch } from '../redux/slices/matchSlice';
 import { clearKeywordInsights } from '../redux/slices/keywordSlice';
@@ -34,7 +30,7 @@ const ResumeParserPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   
-  const { user } = useSelector((state) => state.auth);
+  // const { user } = useSelector((state) => state.auth);
   const { currentResume, isLoading, isSuccess, isError, message } = useSelector(
     (state) => state.resume
   );
@@ -103,7 +99,7 @@ const ResumeParserPage = () => {
       return;
     }
 
-    // Check file size (5MB max)
+    // Check file size (5MB limit)
     if (selectedFile.size > 5 * 1024 * 1024) {
       setFileError('File size should be less than 5MB');
       return;
@@ -133,596 +129,448 @@ const ResumeParserPage = () => {
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
+  const handleUpload = () => {
     if (!file) {
       setFileError('Please select a file to upload');
       return;
     }
 
-    const resumeData = {
-      file,
-      token: user?.token,
-    };
+    const formData = new FormData();
+    formData.append('resume', file);
 
-    dispatch(parseResume(resumeData));
+    dispatch(parseResume(formData));
   };
 
-  const handleContinue = () => {
-    navigate('/job-match');
+  const handleReset = () => {
+    setFile(null);
+    setFileError('');
+    dispatch(reset());
   };
 
-  // Loading animation component
-  const LoadingAnimation = () => (
-    <Box sx={{ 
-      position: 'relative', 
-      display: 'flex', 
-      flexDirection: 'column', 
-      alignItems: 'center', 
-      justifyContent: 'center',
-      py: 6
-    }}>
-      <Box sx={{ position: 'relative', mb: 4 }}>
-        <CircularProgress 
-          variant="determinate" 
-          value={uploadProgress} 
-          size={120} 
-          thickness={4} 
-          sx={{ 
-            color: (theme) => theme.palette.primary.light,
-          }} 
-        />
-        <Box sx={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          bottom: 0,
-          right: 0,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}>
-          <Typography variant="h4" component="div" color="primary">
-            {Math.round(uploadProgress)}%
-          </Typography>
-        </Box>
-      </Box>
-      
-      <Grow in={isLoading} timeout={1000}>
-        <Box sx={{ textAlign: 'center', maxWidth: 400 }}>
-          <Typography variant="h6" gutterBottom>
-            Analyzing Your Resume
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Our AI is extracting key information from your resume including skills, 
-            experience, and education details.
-          </Typography>
-        </Box>
-      </Grow>
-      
-      <Box sx={{ width: '100%', mt: 4, display: 'flex', justifyContent: 'center' }}>
-        {[1, 2, 3, 4, 5].map((dot) => (
-          <Fade 
-            key={dot}
-            in={isLoading} 
-            style={{ 
-              transitionDelay: `${dot * 150}ms`,
-              animationIterationCount: 'infinite',
-            }}
-          >
-            <Box
-              sx={{
-                width: 12,
-                height: 12,
-                mx: 0.5,
-                bgcolor: 'primary.main',
-                borderRadius: '50%',
-                animation: 'bounce 1.4s infinite ease-in-out both',
-                animationDelay: `${dot * 0.16}s`,
-                '@keyframes bounce': {
-                  '0%, 80%, 100%': {
-                    transform: 'scale(0)',
-                  },
-                  '40%': {
-                    transform: 'scale(1)',
-                  },
-                },
-              }}
-            />
-          </Fade>
-        ))}
-      </Box>
-      
-      <Fade in={isLoading && uploadProgress > 30} timeout={1000}>
-        <Box sx={{ mt: 4, display: 'flex', alignItems: 'center' }}>
-          <FileIcon sx={{ mr: 1, color: 'primary.main' }} />
-          <Typography variant="body2" color="text.secondary">
-            Processing {file?.name}
-          </Typography>
-        </Box>
-      </Fade>
-    </Box>
-  );
+  const formatFileSize = (bytes) => {
+    return (bytes / 1024 / 1024).toFixed(2) + ' MB';
+  };
 
-  return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      {/* Process Stepper */}
-      <ProcessStepper activeStep={0} />
-      
-      <Typography variant="h4" component="h1" className="section-title" gutterBottom>
-        Resume Parser
-      </Typography>
-      <Typography variant="body1" paragraph>
-        Upload your resume to extract key information and prepare for job matching.
-        Our AI will analyze your resume and extract skills, experience, and education details.
-      </Typography>
+  // Loading component
+  if (isLoading) {
+    return (
+      <div className="page-container">
+        <div className="content-container">
+          <div className="mb-8">
+            <ProcessStepper activeStep={0} />
+          </div>
 
-      {isError && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {message}
-        </Alert>
-      )}
+          <div className="text-center">
+            <h1 className="text-4xl font-bold text-white mb-4">
+              Processing Your <span className="text-gradient">Resume</span>
+            </h1>
+            <p className="text-xl text-gray-400 mb-12 max-w-2xl mx-auto">
+              Our AI is extracting key information from your resume. This process typically takes a few moments.
+            </p>
 
-      {!isSuccess ? (
-        <Paper 
-          elevation={3} 
-          sx={{ 
-            p: 4, 
-            mt: 4, 
-            borderRadius: 2,
-            backgroundColor: (theme) => theme.palette.mode === 'dark' ? '#1e1e1e' : '#fff',
-          }}
-        >
-          {isLoading ? (
-            <LoadingAnimation />
-          ) : (
-            <form onSubmit={handleSubmit}>
-              <Box
-                onDragEnter={handleDrag}
-                onDragLeave={handleDrag}
-                onDragOver={handleDrag}
-                onDrop={handleDrop}
-                sx={{
-                  border: '2px dashed',
-                  borderColor: dragActive ? 'primary.main' : 'grey.400',
-                  borderRadius: 2,
-                  p: 4,
-                  textAlign: 'center',
-                  cursor: 'pointer',
-                  backgroundColor: dragActive ? 'rgba(63, 81, 181, 0.08)' : 'transparent',
-                  transition: 'all 0.2s ease-in-out',
-                }}
-                onClick={() => document.getElementById('resume-upload').click()}
-              >
-                <input
-                  type="file"
-                  id="resume-upload"
-                  accept=".pdf,.docx"
-                  onChange={handleFileChange}
-                  style={{ display: 'none' }}
+            {/* Progress Circle */}
+            <div className="relative w-32 h-32 mx-auto mb-8">
+              <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 128 128">
+                <circle
+                  cx="64"
+                  cy="64"
+                  r="56"
+                  stroke="currentColor"
+                  strokeWidth="8"
+                  fill="none"
+                  className="text-dark-700"
                 />
-                <UploadIcon sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
-                <Typography variant="h6" gutterBottom>
-                  {file ? 'File selected' : 'Drag and drop your resume here'}
-                </Typography>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  {file ? file.name : 'or click to browse files'}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  Supported formats: PDF, DOCX (Max 5MB)
-                </Typography>
-                
-                {file && (
-                  <Box sx={{ mt: 2 }}>
-                    <Chip
-                      label={file.name}
-                      onDelete={() => setFile(null)}
-                      color="primary"
-                    />
-                  </Box>
-                )}
-                
-                {fileError && (
-                  <Alert severity="error" sx={{ mt: 2 }}>
-                    {fileError}
-                  </Alert>
-                )}
-              </Box>
+                <circle
+                  cx="64"
+                  cy="64"
+                  r="56"
+                  stroke="currentColor"
+                  strokeWidth="8"
+                  fill="none"
+                  strokeDasharray={351.86}
+                  strokeDashoffset={351.86 - (351.86 * uploadProgress) / 100}
+                  className="text-neon-500 transition-all duration-300 ease-out"
+                  strokeLinecap="round"
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-white">
+                    {Math.round(uploadProgress)}%
+                  </div>
+                  <div className="text-xs text-gray-400">Processing</div>
+                </div>
+              </div>
+            </div>
 
-              <Box sx={{ mt: 3, textAlign: 'center' }}>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  size="large"
-                  disabled={!file || isLoading}
-                  startIcon={<UploadIcon />}
-                  sx={{ borderRadius: 8 }}
-                >
-                  Parse Resume
-                </Button>
-              </Box>
-            </form>
-          )}
-        </Paper>
-      ) : (
-        <Box sx={{ mt: 4 }}>
-          <Alert severity="success" sx={{ mb: 3 }}>
-            Resume parsed successfully!
-          </Alert>
-          
-          <Grid container spacing={4}>
-            <Grid item xs={12} md={6}>
-              <Card sx={{ height: '100%' }}>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    Personal Information
-                  </Typography>
-                  <List>
-                    <ListItem>
-                      <ListItemText primary="Name" secondary={currentResume?.name || 'N/A'} />
-                    </ListItem>
-                    <Divider component="li" />
-                    <ListItem>
-                      <ListItemText primary="Email" secondary={currentResume?.email || 'N/A'} />
-                    </ListItem>
-                    <Divider component="li" />
-                    <ListItem>
-                      <ListItemText primary="Phone" secondary={currentResume?.phone || 'N/A'} />
-                    </ListItem>
-                    <Divider component="li" />
-                    <ListItem>
-                      <ListItemText primary="Location" secondary={currentResume?.location || 'N/A'} />
-                    </ListItem>
-                  </List>
-                </CardContent>
-              </Card>
-            </Grid>
-            
-            <Grid item xs={12} md={6}>
-              <Card sx={{ height: '100%' }}>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    Skills
-                  </Typography>
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                    {currentResume?.skills?.map((skill, index) => (
-                      <Chip key={index} label={skill} color="primary" variant="outlined" />
-                    ))}
-                    {(!currentResume?.skills || currentResume.skills.length === 0) && (
-                      <Typography variant="body2" color="text.secondary">
-                        No skills found
-                      </Typography>
-                    )}
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-            
-            <Grid item xs={12} md={6}>
-              <Card sx={{ height: '100%' }}>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    Languages
-                  </Typography>
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                    {currentResume?.languages?.map((language, index) => (
-                      <Chip 
-                        key={index} 
-                        label={language.name + (language.proficiency ? ` (${language.proficiency})` : '')} 
-                        color="secondary" 
-                        variant="outlined" 
-                      />
-                    ))}
-                    {(!currentResume?.languages || currentResume.languages.length === 0) && (
-                      <Typography variant="body2" color="text.secondary">
-                        No languages found
-                      </Typography>
-                    )}
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-            
-            <Grid item xs={12} md={6}>
-              <Card sx={{ height: '100%' }}>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    Online Profiles
-                  </Typography>
-                  <List dense>
-                    {currentResume?.urls?.map((url, index) => (
-                      <React.Fragment key={index}>
-                        {index > 0 && <Divider component="li" />}
-                        <ListItem>
-                          <ListItemText 
-                            primary={url.urlType || 'Link'} 
-                            secondary={
-                              <a href={url.url} target="_blank" rel="noopener noreferrer">
-                                {url.url}
-                              </a>
-                            } 
-                          />
-                        </ListItem>
-                      </React.Fragment>
-                    ))}
-                    {(!currentResume?.urls || currentResume.urls.length === 0) && (
-                      <Typography variant="body2" color="text.secondary">
-                        No online profiles found
-                      </Typography>
-                    )}
-                  </List>
-                </CardContent>
-              </Card>
-            </Grid>
-            
-            <Grid item xs={12}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    Experience
-                  </Typography>
-                  {currentResume?.experience?.map((exp, index) => (
-                    <Box key={index} sx={{ mb: 2 }}>
-                      <Typography variant="subtitle1" fontWeight="bold">
-                        {exp.title} at {exp.company}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
+            {/* Processing file indicator */}
+            {file && (
+              <div className="inline-flex items-center space-x-3 p-4 bg-dark-800 border border-dark-600 rounded-lg fade-in">
+                <FileText className="w-5 h-5 text-neon-400" />
+                <span className="text-gray-300 font-medium">{file.name}</span>
+              </div>
+            )}
+
+            {/* Animated dots */}
+            <div className="flex justify-center items-center space-x-2 mt-8">
+              {[0, 1, 2].map((i) => (
+                <div
+                  key={i}
+                  className="w-2 h-2 bg-neon-500 rounded-full animate-bounce"
+                  style={{ animationDelay: `${i * 0.2}s` }}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Success state - display parsed resume
+  if (isSuccess && currentResume) {
+    return (
+      <div className="page-container">
+        <div className="content-container">
+          <div className="mb-8">
+            <ProcessStepper activeStep={0} />
+          </div>
+
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-neon rounded-full mb-4 shadow-glow">
+              <CheckCircle className="w-8 h-8 text-dark-950" />
+            </div>
+            <h1 className="text-4xl font-bold text-white mb-4">
+              Resume <span className="text-gradient">Parsed Successfully!</span>
+            </h1>
+            <p className="text-xl text-gray-400 mb-8">
+              Here's the information we extracted from your resume
+            </p>
+          </div>
+
+          {/* Resume Data */}
+          <div className="grid lg:grid-cols-2 gap-8 mb-8">
+            {/* Personal Information */}
+            <div className="card p-6">
+              <div className="flex items-center mb-4">
+                <User className="w-6 h-6 text-neon-400 mr-3" />
+                <h2 className="text-xl font-semibold text-white">Personal Information</h2>
+              </div>
+              <div className="space-y-3">
+                {currentResume.name && (
+                  <div className="flex items-center space-x-3">
+                    <User className="w-4 h-4 text-gray-400" />
+                    <span className="text-gray-300">{currentResume.name}</span>
+                  </div>
+                )}
+                {currentResume.email && (
+                  <div className="flex items-center space-x-3">
+                    <Mail className="w-4 h-4 text-gray-400" />
+                    <span className="text-gray-300">{currentResume.email}</span>
+                  </div>
+                )}
+                {currentResume.phone && (
+                  <div className="flex items-center space-x-3">
+                    <Phone className="w-4 h-4 text-gray-400" />
+                    <span className="text-gray-300">{currentResume.phone}</span>
+                  </div>
+                )}
+                {currentResume.location && (
+                  <div className="flex items-center space-x-3">
+                    <MapPin className="w-4 h-4 text-gray-400" />
+                    <span className="text-gray-300">{currentResume.location}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Skills */}
+            <div className="card p-6">
+              <div className="flex items-center mb-4">
+                <Star className="w-6 h-6 text-neon-400 mr-3" />
+                <h2 className="text-xl font-semibold text-white">Skills</h2>
+              </div>
+              {currentResume.skills && currentResume.skills.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {currentResume.skills.map((skill, index) => (
+                    <span key={index} className="badge badge-info">
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-400">No skills found</p>
+              )}
+            </div>
+
+            {/* Languages */}
+            {currentResume.languages && currentResume.languages.length > 0 && (
+              <div className="card p-6">
+                <h2 className="text-xl font-semibold text-white mb-4">Languages</h2>
+                <div className="flex flex-wrap gap-2">
+                  {currentResume.languages.map((language, index) => (
+                    <span key={index} className="badge badge-warning">
+                      {language}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Online Profiles */}
+            {currentResume.onlineProfiles && currentResume.onlineProfiles.length > 0 && (
+              <div className="card p-6">
+                <h2 className="text-xl font-semibold text-white mb-4">Online Profiles</h2>
+                <div className="space-y-3">
+                  {currentResume.onlineProfiles.map((profile, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-dark-800 rounded-lg">
+                      <span className="text-gray-300">{profile.type || 'Profile'}</span>
+                      <a 
+                        href={profile.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-neon-400 hover:text-neon-300 flex items-center"
+                      >
+                        <ExternalLink className="w-4 h-4 ml-2" />
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Experience */}
+          {currentResume.experience && currentResume.experience.length > 0 && (
+            <div className="card p-6 mb-8">
+              <div className="flex items-center mb-6">
+                <Briefcase className="w-6 h-6 text-neon-400 mr-3" />
+                <h2 className="text-xl font-semibold text-white">Work Experience</h2>
+              </div>
+              <div className="space-y-6">
+                {currentResume.experience.map((exp, index) => (
+                  <div key={index} className={`${index !== 0 ? 'border-t border-dark-700 pt-6' : ''}`}>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3">
+                      <h3 className="text-lg font-semibold text-white">{exp.title}</h3>
+                      <div className="flex items-center text-gray-400 text-sm">
+                        <Calendar className="w-4 h-4 mr-1" />
                         {exp.startDate} - {exp.endDate || 'Present'}
-                      </Typography>
-                      <Typography variant="body2" sx={{ mt: 1 }}>
-                        {exp.description}
-                      </Typography>
-                      {index < currentResume.experience.length - 1 && <Divider sx={{ mt: 2 }} />}
-                    </Box>
-                  ))}
-                  {(!currentResume?.experience || currentResume.experience.length === 0) && (
-                    <Typography variant="body2" color="text.secondary">
-                      No experience found
-                    </Typography>
-                  )}
-                </CardContent>
-              </Card>
-            </Grid>
-            
-            <Grid item xs={12}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    Education
-                  </Typography>
-                  {currentResume?.education?.map((edu, index) => (
-                    <Box key={index} sx={{ mb: 2 }}>
-                      <Typography variant="subtitle1" fontWeight="bold">
-                        {edu.degree} in {edu.field}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {edu.institution}, {edu.startDate} - {edu.endDate || 'Present'}
-                      </Typography>
-                      {edu.description && (
-                        <Typography variant="body2" sx={{ mt: 1 }}>
-                          {edu.description}
-                        </Typography>
-                      )}
-                      {index < currentResume.education.length - 1 && <Divider sx={{ mt: 2 }} />}
-                    </Box>
-                  ))}
-                  {(!currentResume?.education || currentResume.education.length === 0) && (
-                    <Typography variant="body2" color="text.secondary">
-                      No education found
-                    </Typography>
-                  )}
-                </CardContent>
-              </Card>
-            </Grid>
-            
-            <Grid item xs={12} md={6}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    Certifications
-                  </Typography>
-                  <List>
-                    {currentResume?.certifications?.map((cert, index) => (
-                      <React.Fragment key={index}>
-                        {index > 0 && <Divider component="li" />}
-                        <ListItem>
-                          <ListItemText 
-                            primary={cert.name} 
-                            secondary={
-                              <>
-                                {cert.issuer && <span>Issuer: {cert.issuer}<br/></span>}
-                                {cert.date && <span>Date: {cert.date}<br/></span>}
-                                {cert.url && (
-                                  <a href={cert.url} target="_blank" rel="noopener noreferrer">
-                                    View Certificate
-                                  </a>
-                                )}
-                              </>
-                            }
-                          />
-                        </ListItem>
-                      </React.Fragment>
-                    ))}
-                    {(!currentResume?.certifications || currentResume.certifications.length === 0) && (
-                      <Typography variant="body2" color="text.secondary">
-                        No certifications found
-                      </Typography>
+                      </div>
+                    </div>
+                    <div className="flex items-center text-gray-300 mb-3">
+                      <Building className="w-4 h-4 mr-2" />
+                      {exp.company}
+                    </div>
+                    {exp.description && (
+                      <p className="text-gray-400 leading-relaxed">{exp.description}</p>
                     )}
-                  </List>
-                </CardContent>
-              </Card>
-            </Grid>
-            
-            <Grid item xs={12} md={6}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    Achievements
-                  </Typography>
-                  <List>
-                    {currentResume?.achievements?.map((achievement, index) => (
-                      <React.Fragment key={index}>
-                        {index > 0 && <Divider component="li" />}
-                        <ListItem>
-                          <ListItemText 
-                            primary={achievement.title} 
-                            secondary={
-                              <>
-                                {achievement.date && <span>Date: {achievement.date}<br/></span>}
-                                {achievement.description && <span>{achievement.description}</span>}
-                              </>
-                            }
-                          />
-                        </ListItem>
-                      </React.Fragment>
-                    ))}
-                    {(!currentResume?.achievements || currentResume.achievements.length === 0) && (
-                      <Typography variant="body2" color="text.secondary">
-                        No achievements found
-                      </Typography>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Education */}
+          {currentResume.education && currentResume.education.length > 0 && (
+            <div className="card p-6 mb-8">
+              <div className="flex items-center mb-6">
+                <GraduationCap className="w-6 h-6 text-neon-400 mr-3" />
+                <h2 className="text-xl font-semibold text-white">Education</h2>
+              </div>
+              <div className="space-y-6">
+                {currentResume.education.map((edu, index) => (
+                  <div key={index} className={`${index !== 0 ? 'border-t border-dark-700 pt-6' : ''}`}>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3">
+                      <h3 className="text-lg font-semibold text-white">{edu.degree}</h3>
+                      <div className="flex items-center text-gray-400 text-sm">
+                        <Calendar className="w-4 h-4 mr-1" />
+                        {edu.startDate} - {edu.endDate || 'Present'}
+                      </div>
+                    </div>
+                    <div className="text-gray-300 mb-2">{edu.field}</div>
+                    <div className="flex items-center text-gray-400 mb-3">
+                      <Building className="w-4 h-4 mr-2" />
+                      {edu.institution}
+                    </div>
+                    {edu.description && (
+                      <p className="text-gray-400 leading-relaxed">{edu.description}</p>
                     )}
-                  </List>
-                </CardContent>
-              </Card>
-            </Grid>
-            
-            <Grid item xs={12}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    Projects
-                  </Typography>
-                  {currentResume?.projects?.map((project, index) => (
-                    <Box key={index} sx={{ mb: 2 }}>
-                      <Typography variant="subtitle1" fontWeight="bold">
-                        {project.name}
-                      </Typography>
-                      {project.role && (
-                        <Typography variant="body2" color="text.secondary">
-                          Role: {project.role}
-                        </Typography>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Certifications */}
+          {currentResume.certifications && currentResume.certifications.length > 0 && (
+            <div className="grid lg:grid-cols-2 gap-8 mb-8">
+              <div className="card p-6">
+                <div className="flex items-center mb-4">
+                  <Award className="w-6 h-6 text-neon-400 mr-3" />
+                  <h2 className="text-xl font-semibold text-white">Certifications</h2>
+                </div>
+                <div className="space-y-3">
+                  {currentResume.certifications.map((cert, index) => (
+                    <div key={index} className="p-3 bg-dark-800 rounded-lg">
+                      <div className="font-medium text-white">{cert.name}</div>
+                      <div className="text-gray-400 text-sm">{cert.issuer}</div>
+                      {cert.date && (
+                        <div className="text-gray-500 text-xs mt-1">{cert.date}</div>
                       )}
-                      {(project.startDate || project.endDate) && (
-                        <Typography variant="body2" color="text.secondary">
-                          {project.startDate || ''} {project.startDate && project.endDate ? '-' : ''} {project.endDate || ''}
-                        </Typography>
-                      )}
-                      {project.description && (
-                        <Typography variant="body2" sx={{ mt: 1 }}>
-                          {project.description}
-                        </Typography>
-                      )}
-                      {project.url && (
-                        <Typography variant="body2" sx={{ mt: 1 }}>
-                          <a href={project.url} target="_blank" rel="noopener noreferrer">
-                            Project Link
-                          </a>
-                        </Typography>
-                      )}
-                      {index < currentResume.projects.length - 1 && <Divider sx={{ mt: 2 }} />}
-                    </Box>
+                    </div>
                   ))}
-                  {(!currentResume?.projects || currentResume.projects.length === 0) && (
-                    <Typography variant="body2" color="text.secondary">
-                      No projects found
-                    </Typography>
-                  )}
-                </CardContent>
-              </Card>
-            </Grid>
-            
-            <Grid item xs={12}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    Publications
-                  </Typography>
-                  {currentResume?.publications?.map((publication, index) => (
-                    <Box key={index} sx={{ mb: 2 }}>
-                      <Typography variant="subtitle1" fontWeight="bold">
-                        {publication.title}
-                      </Typography>
-                      {publication.publisher && (
-                        <Typography variant="body2" color="text.secondary">
-                          Publisher: {publication.publisher}
-                        </Typography>
-                      )}
-                      {publication.date && (
-                        <Typography variant="body2" color="text.secondary">
-                          Date: {publication.date}
-                        </Typography>
-                      )}
-                      {publication.description && (
-                        <Typography variant="body2" sx={{ mt: 1 }}>
-                          {publication.description}
-                        </Typography>
-                      )}
-                      {publication.url && (
-                        <Typography variant="body2" sx={{ mt: 1 }}>
-                          <a href={publication.url} target="_blank" rel="noopener noreferrer">
-                            View Publication
-                          </a>
-                        </Typography>
-                      )}
-                      {index < currentResume.publications.length - 1 && <Divider sx={{ mt: 2 }} />}
-                    </Box>
-                  ))}
-                  {(!currentResume?.publications || currentResume.publications.length === 0) && (
-                    <Typography variant="body2" color="text.secondary">
-                      No publications found
-                    </Typography>
-                  )}
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
-          
-          <Stack direction="row" spacing={2} justifyContent="center" sx={{ mt: 4 }}>
-            <Button
-              variant="outlined"
-              onClick={() => dispatch(reset())}
-              sx={{ 
-                borderRadius: 8,
-                px: 4,
-                py: 1.5,
-                borderWidth: 2,
-                borderColor: 'primary.main',
-                color: 'primary.main',
-                fontWeight: 'medium',
-                transition: 'all 0.3s ease',
-                '&:hover': {
-                  borderWidth: 2,
-                  borderColor: 'primary.dark',
-                  backgroundColor: 'rgba(63, 81, 181, 0.04)',
-                  transform: 'translateY(-2px)'
-                }
-              }}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button 
+              onClick={handleReset}
+              className="btn-secondary flex items-center justify-center"
             >
+              <RefreshCw className="w-5 h-5 mr-2" />
               Parse Another Resume
-            </Button>
-            <Button
-              variant="contained"
-              onClick={handleContinue}
-              sx={{ 
-                borderRadius: 8,
-                px: 4,
-                py: 1.5,
-                boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
-                background: 'linear-gradient(45deg, #3f51b5 30%, #7986cb 90%)',
-                transition: 'all 0.3s ease',
-                '&:hover': {
-                  boxShadow: '0 6px 15px rgba(0,0,0,0.2)',
-                  transform: 'translateY(-2px)'
-                }
+            </button>
+            <button 
+              onClick={() => {
+                // Save current resume to localStorage before navigation
+                localStorage.setItem('currentResume', JSON.stringify(currentResume));
+                navigate('/job-match');
               }}
+              className="btn-primary flex items-center justify-center"
             >
               Continue to Job Matching
-            </Button>
-          </Stack>
-        </Box>
-      )}
-    </Container>
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Upload form state
+  return (
+    <div className="page-container">
+      <div className="content-container">
+        <div className="mb-8">
+          <ProcessStepper activeStep={0} />
+        </div>
+
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-white mb-4">
+            Upload Your <span className="text-gradient">Resume</span>
+          </h1>
+          <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+            Upload your resume and let our AI extract key information to optimize your job applications
+          </p>
+        </div>
+
+        <div className="max-w-2xl mx-auto">
+          {/* Upload Area */}
+          <div 
+            className={`file-upload-zone ${dragActive ? 'border-neon-500 bg-dark-900' : ''}`}
+            onDragEnter={handleDrag}
+            onDragLeave={handleDrag}
+            onDragOver={handleDrag}
+            onDrop={handleDrop}
+          >
+            <input
+              type="file"
+              onChange={handleFileChange}
+              accept=".pdf,.docx"
+              className="hidden"
+              id="file-upload"
+            />
+            
+            <Upload className={`w-16 h-16 mx-auto mb-4 ${dragActive ? 'text-neon-400' : 'text-gray-400'}`} />
+            
+            <h3 className="text-xl font-semibold text-white mb-2">
+              {dragActive ? 'Drop your file here' : 'Choose a file or drag it here'}
+            </h3>
+            
+            <p className="text-gray-400 mb-6">
+              Supports PDF and DOCX files up to 5MB
+            </p>
+            
+            <label 
+              htmlFor="file-upload"
+              className="btn-primary cursor-pointer inline-flex items-center"
+            >
+              <Upload className="w-5 h-5 mr-2" />
+              Browse Files
+            </label>
+          </div>
+
+          {/* Selected File Display */}
+          {file && (
+            <div className="mt-6 p-4 bg-dark-800 border border-dark-600 rounded-lg fade-in">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <FileText className="w-8 h-8 text-neon-400" />
+                  <div>
+                    <div className="font-medium text-white">{file.name}</div>
+                    <div className="text-sm text-gray-400">{formatFileSize(file.size)}</div>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setFile(null)}
+                  className="p-2 hover:bg-dark-700 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-400" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Error Display */}
+          {(fileError || isError) && (
+            <div className="mt-6 p-4 bg-red-900 border border-red-700 rounded-lg text-red-300 flex items-center">
+              <AlertCircle className="w-5 h-5 mr-3 text-red-400" />
+              <span>{fileError || message}</span>
+            </div>
+          )}
+
+          {/* Action Button */}
+          <div className="mt-8 text-center">
+            <button 
+              onClick={handleUpload}
+              disabled={!file || isLoading}
+              className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center mx-auto"
+            >
+              <FileText className="w-5 h-5 mr-2" />
+              Parse Resume
+            </button>
+          </div>
+
+          {/* File Requirements */}
+          <div className="mt-8 p-6 bg-dark-800 border border-dark-600 rounded-lg">
+            <h4 className="font-semibold text-white mb-3">File Requirements:</h4>
+            <ul className="space-y-2 text-gray-400 text-sm">
+              <li className="flex items-center">
+                <CheckCircle className="w-4 h-4 text-neon-400 mr-2" />
+                PDF or DOCX format only
+              </li>
+              <li className="flex items-center">
+                <CheckCircle className="w-4 h-4 text-neon-400 mr-2" />
+                Maximum file size: 5MB
+              </li>
+              <li className="flex items-center">
+                <CheckCircle className="w-4 h-4 text-neon-400 mr-2" />
+                Text should be searchable (not scanned images)
+              </li>
+              <li className="flex items-center">
+                <CheckCircle className="w-4 h-4 text-neon-400 mr-2" />
+                Include all relevant sections (experience, education, skills)
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

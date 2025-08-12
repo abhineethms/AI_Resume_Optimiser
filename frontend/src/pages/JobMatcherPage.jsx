@@ -2,47 +2,33 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Container,
-  Grid,
-  Typography,
-  Paper,
-  Divider,
-  Chip,
-  Alert,
-  CircularProgress,
-  Stack,
-  TextField,
-  Tabs,
-  Tab,
-  Fade,
-  Grow,
-} from '@mui/material';
-import {
-  CloudUpload as UploadIcon,
-  Check as CheckIcon,
-  Description as FileIcon,
-  TextFields as TextIcon,
-} from '@mui/icons-material';
+  Upload,
+  FileText,
+  Check,
+  AlertCircle,
+  RefreshCw,
+  ArrowRight,
+  Building,
+  MapPin,
+  Clock,
+  Star,
+  Briefcase,
+  Zap
+} from 'lucide-react';
 import { parseJobFile, parseJobText, reset } from '../redux/slices/jobSlice';
 import ProcessStepper from '../components/ui/ProcessStepper';
 
 // TabPanel component for tab content
-function TabPanel(props) {
-  const { children, value, index, ...other } = props;
-
+function TabPanel({ children, value, index }) {
   return (
     <div
       role="tabpanel"
       hidden={value !== index}
       id={`job-tabpanel-${index}`}
       aria-labelledby={`job-tab-${index}`}
-      {...other}
+      className={value === index ? 'block p-6' : 'hidden'}
     >
-      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+      {children}
     </div>
   );
 }
@@ -99,9 +85,10 @@ const JobMatcherPage = () => {
     }
   }, [currentResume, navigate]);
 
-  const handleTabChange = (event, newValue) => {
-    setTabValue(newValue);
-  };
+  // Tab change handler for manual tab switching
+  // const handleTabChange = (event, newValue) => {
+  //   setTabValue(newValue);
+  // };
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -190,353 +177,343 @@ const JobMatcherPage = () => {
 
   // Loading animation component
   const LoadingAnimation = () => (
-    <Box sx={{ 
-      position: 'relative', 
-      display: 'flex', 
-      flexDirection: 'column', 
-      alignItems: 'center', 
-      justifyContent: 'center',
-      py: 6
-    }}>
-      <Box sx={{ position: 'relative', mb: 4 }}>
-        <CircularProgress 
-          variant="determinate" 
-          value={uploadProgress} 
-          size={120} 
-          thickness={4} 
-          sx={{ 
-            color: (theme) => theme.palette.primary.light,
-          }} 
-        />
-        <Box sx={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          bottom: 0,
-          right: 0,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}>
-          <Typography variant="h4" component="div" color="primary">
-            {Math.round(uploadProgress)}%
-          </Typography>
-        </Box>
-      </Box>
+    <div className="flex flex-col items-center justify-center py-12">
+      {/* Progress Circle */}
+      <div className="relative w-32 h-32 mb-8">
+        <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 128 128">
+          <circle
+            cx="64"
+            cy="64"
+            r="56"
+            stroke="currentColor"
+            strokeWidth="8"
+            fill="none"
+            className="text-dark-700"
+          />
+          <circle
+            cx="64"
+            cy="64"
+            r="56"
+            stroke="currentColor"
+            strokeWidth="8"
+            fill="none"
+            strokeDasharray={351.86}
+            strokeDashoffset={351.86 - (351.86 * uploadProgress) / 100}
+            className="text-neon-500 transition-all duration-300 ease-out"
+            strokeLinecap="round"
+          />
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-3xl font-bold text-white">
+              {Math.round(uploadProgress)}%
+            </div>
+            <div className="text-xs text-gray-400">Processing</div>
+          </div>
+        </div>
+      </div>
       
-      <Grow in={isLoading} timeout={1000}>
-        <Box sx={{ textAlign: 'center', maxWidth: 400 }}>
-          <Typography variant="h6" gutterBottom>
-            Analyzing Job Description
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Our AI is extracting key information from your job description including required skills, 
-            qualifications, and responsibilities.
-          </Typography>
-        </Box>
-      </Grow>
+      <div className="text-center max-w-md fade-in">
+        <h3 className="text-xl font-semibold text-white mb-4">
+          Analyzing Job Description
+        </h3>
+        <p className="text-gray-400 leading-relaxed">
+          Our AI is extracting key information from your job description including required skills, 
+          qualifications, and responsibilities.
+        </p>
+      </div>
       
-      <Box sx={{ width: '100%', mt: 4, display: 'flex', justifyContent: 'center' }}>
-        {[1, 2, 3, 4, 5].map((dot) => (
-          <Fade 
-            key={dot}
-            in={isLoading} 
-            style={{ 
-              transitionDelay: `${dot * 150}ms`,
-              animationIterationCount: 'infinite',
-            }}
-          >
-            <Box
-              sx={{
-                width: 12,
-                height: 12,
-                mx: 0.5,
-                bgcolor: 'primary.main',
-                borderRadius: '50%',
-                animation: 'bounce 1.4s infinite ease-in-out both',
-                animationDelay: `${dot * 0.16}s`,
-                '@keyframes bounce': {
-                  '0%, 80%, 100%': {
-                    transform: 'scale(0)',
-                  },
-                  '40%': {
-                    transform: 'scale(1)',
-                  },
-                },
-              }}
-            />
-          </Fade>
+      {/* Animated dots */}
+      <div className="flex justify-center items-center space-x-2 mt-8">
+        {[0, 1, 2, 3, 4].map((i) => (
+          <div
+            key={i}
+            className="w-3 h-3 bg-neon-500 rounded-full animate-bounce"
+            style={{ animationDelay: `${i * 0.2}s` }}
+          />
         ))}
-      </Box>
+      </div>
       
-      <Fade in={isLoading && uploadProgress > 30} timeout={1000}>
-        <Box sx={{ mt: 4, display: 'flex', alignItems: 'center' }}>
-          {file ? (
-            <>
-              <FileIcon sx={{ mr: 1, color: 'primary.main' }} />
-              <Typography variant="body2" color="text.secondary">
-                Processing {file.name}
-              </Typography>
-            </>
-          ) : (
-            <>
-              <TextIcon sx={{ mr: 1, color: 'primary.main' }} />
-              <Typography variant="body2" color="text.secondary">
-                Processing job description text
-              </Typography>
-            </>
-          )}
-        </Box>
-      </Fade>
-    </Box>
+      {/* Processing file indicator */}
+      {uploadProgress > 30 && (
+        <div className="mt-6 fade-in">
+          <div className="inline-flex items-center space-x-3 p-4 bg-dark-800 border border-dark-600 rounded-lg">
+            {file ? (
+              <>
+                <FileText className="w-5 h-5 text-neon-400" />
+                <span className="text-gray-300 font-medium">Processing {file.name}</span>
+              </>
+            ) : (
+              <>
+                <Briefcase className="w-5 h-5 text-neon-400" />
+                <span className="text-gray-300 font-medium">Processing job description text</span>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
   );
 
   return (
-    <Container maxWidth="lg" className="page-container">
-      <Typography variant="h4" component="h1" className="section-title" gutterBottom>
-        Job Description Parser
-      </Typography>
-      <Typography variant="body1" paragraph>
-        Upload or paste a job description to match with your resume.
-        Our AI will analyze the job requirements and compare them with your skills and experience.
-      </Typography>
+    <div className="page-container">
+      <div className="content-container">
+        <div className="mb-8">
+          <ProcessStepper activeStep={1} />
+        </div>
 
-      {isError && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {message}
-        </Alert>
-      )}
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-white mb-4">
+            Job Description <span className="text-gradient">Parser</span>
+          </h1>
+          <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+            Upload or paste a job description to match with your resume.
+            Our AI will analyze the job requirements and compare them with your skills and experience.
+          </p>
+        </div>
 
-      <ProcessStepper activeStep={1} />
+        {/* Error Alert */}
+        {isError && (
+          <div className="mb-6 p-4 bg-red-900 border border-red-700 rounded-lg text-red-300 flex items-center fade-in">
+            <AlertCircle className="w-5 h-5 mr-3 text-red-400" />
+            <span>{message}</span>
+          </div>
+        )}
 
-      {isLoading ? (
-        <Paper 
-          elevation={3} 
-          sx={{ 
-            p: 4, 
-            mt: 4, 
-            borderRadius: 2,
-            backgroundColor: (theme) => theme.palette.mode === 'dark' ? '#1e1e1e' : '#fff',
-          }}
-        >
-          <LoadingAnimation />
-        </Paper>
-      ) : !isSuccess ? (
-        <Paper 
-          elevation={3} 
-          sx={{ 
-            p: 4, 
-            mt: 4, 
-            borderRadius: 2,
-            backgroundColor: (theme) => theme.palette.mode === 'dark' ? '#1e1e1e' : '#fff',
-          }}
-        >
-          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <Tabs value={tabValue} onChange={handleTabChange} aria-label="job description input tabs">
-              <Tab icon={<FileIcon />} label="Upload File" id="job-tab-0" aria-controls="job-tabpanel-0" />
-              <Tab icon={<TextIcon />} label="Paste Text" id="job-tab-1" aria-controls="job-tabpanel-1" />
-            </Tabs>
-          </Box>
-          
-          <TabPanel value={tabValue} index={0}>
-            <form onSubmit={handleFileSubmit}>
-              <Box
-                onDragEnter={handleDrag}
-                onDragLeave={handleDrag}
-                onDragOver={handleDrag}
-                onDrop={handleDrop}
-                sx={{
-                  border: '2px dashed',
-                  borderColor: dragActive ? 'primary.main' : 'grey.400',
-                  borderRadius: 2,
-                  p: 4,
-                  textAlign: 'center',
-                  cursor: 'pointer',
-                  backgroundColor: dragActive ? 'rgba(63, 81, 181, 0.08)' : 'transparent',
-                  transition: 'all 0.2s ease-in-out',
-                }}
-              >
-                <input
-                  type="file"
-                  id="job-file-upload"
-                  onChange={handleFileChange}
-                  accept=".pdf,.docx,.txt"
-                  style={{ display: 'none' }}
-                />
-                <label htmlFor="job-file-upload" style={{ cursor: 'pointer', width: '100%', height: '100%' }}>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <UploadIcon sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
-                    <Typography variant="h6" gutterBottom>
-                      Drag & Drop or Click to Upload
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Supports PDF, DOCX, and TXT files (Max 5MB)
-                    </Typography>
-                    {file && (
-                      <Box sx={{ mt: 2, display: 'flex', alignItems: 'center' }}>
-                        <CheckIcon color="success" sx={{ mr: 1 }} />
-                        <Typography variant="body2">
-                          {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
-                        </Typography>
-                      </Box>
+        {isLoading ? (
+          <div className="card p-8">
+            <LoadingAnimation />
+          </div>
+        ) : !isSuccess ? (
+          <div className="max-w-4xl mx-auto">
+            <div className="card overflow-hidden">
+              {/* Tab Headers */}
+              <div className="tab-list">
+                <button
+                  className={`tab ${tabValue === 0 ? 'tab-active' : ''}`}
+                  onClick={() => setTabValue(0)}
+                  id="job-tab-0"
+                  aria-controls="job-tabpanel-0"
+                >
+                  <FileText className="w-5 h-5 mr-2" />
+                  Upload File
+                </button>
+                <button
+                  className={`tab ${tabValue === 1 ? 'tab-active' : ''}`}
+                  onClick={() => setTabValue(1)}
+                  id="job-tab-1"
+                  aria-controls="job-tabpanel-1"
+                >
+                  <Briefcase className="w-5 h-5 mr-2" />
+                  Paste Text
+                </button>
+              </div>
+              
+              {/* File Upload Tab */}
+              <TabPanel value={tabValue} index={0}>
+                <form onSubmit={handleFileSubmit}>
+                  <div
+                    className={`file-upload-zone ${dragActive ? 'border-neon-500 bg-dark-900' : ''}`}
+                    onDragEnter={handleDrag}
+                    onDragLeave={handleDrag}
+                    onDragOver={handleDrag}
+                    onDrop={handleDrop}
+                  >
+                    <input
+                      type="file"
+                      id="job-file-upload"
+                      onChange={handleFileChange}
+                      accept=".pdf,.docx,.txt"
+                      className="hidden"
+                    />
+                    <label htmlFor="job-file-upload" className="cursor-pointer flex flex-col items-center">
+                      <Upload className={`w-16 h-16 mb-4 ${dragActive ? 'text-neon-400' : 'text-gray-400'}`} />
+                      <h3 className="text-xl font-semibold text-white mb-2">
+                        {dragActive ? 'Drop your file here' : 'Drag & Drop or Click to Upload'}
+                      </h3>
+                      <p className="text-gray-400 mb-6">
+                        Supports PDF, DOCX, and TXT files (Max 5MB)
+                      </p>
+                      {file && (
+                        <div className="mt-4 flex items-center p-3 bg-dark-800 rounded-lg">
+                          <Check className="w-5 h-5 text-neon-400 mr-2" />
+                          <span className="text-gray-300">
+                            {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                          </span>
+                        </div>
+                      )}
+                    </label>
+                  </div>
+                  
+                  {fileError && (
+                    <div className="mt-4 p-4 bg-red-900 border border-red-700 rounded-lg text-red-300 flex items-center">
+                      <AlertCircle className="w-5 h-5 mr-3 text-red-400" />
+                      <span>{fileError}</span>
+                    </div>
+                  )}
+                  
+                  <div className="mt-6 text-center">
+                    <button
+                      type="submit"
+                      disabled={!file || isLoading}
+                      className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center mx-auto min-w-[200px]"
+                    >
+                      {isLoading ? (
+                        <>
+                          <div className="loading-spinner w-5 h-5 mr-2"></div>
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          <FileText className="w-5 h-5 mr-2" />
+                          Parse Job Description
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </TabPanel>
+              
+              {/* Text Input Tab */}
+              <TabPanel value={tabValue} index={1}>
+                <form onSubmit={handleTextSubmit}>
+                  <div className="mb-6">
+                    <textarea
+                      rows={12}
+                      placeholder="Paste job description text here..."
+                      value={jobText}
+                      onChange={handleTextChange}
+                      className={`input-primary w-full resize-none ${textError ? 'input-error' : ''}`}
+                    />
+                    {textError && (
+                      <p className="mt-2 text-red-400 text-sm flex items-center">
+                        <AlertCircle className="w-4 h-4 mr-1" />
+                        {textError}
+                      </p>
                     )}
-                  </Box>
-                </label>
-              </Box>
-              
-              {fileError && (
-                <Alert severity="error" sx={{ mt: 2 }}>
-                  {fileError}
-                </Alert>
-              )}
-              
-              <Box sx={{ mt: 3, textAlign: 'center' }}>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  size="large"
-                  disabled={!file || isLoading}
-                  startIcon={isLoading ? <CircularProgress size={24} /> : null}
-                  sx={{ borderRadius: 8, minWidth: 200 }}
-                >
-                  {isLoading ? 'Processing...' : 'Parse Job Description'}
-                </Button>
-              </Box>
-            </form>
-          </TabPanel>
-          
-          <TabPanel value={tabValue} index={1}>
-            <form onSubmit={handleTextSubmit}>
-              <TextField
-                fullWidth
-                multiline
-                rows={10}
-                variant="outlined"
-                placeholder="Paste job description text here..."
-                value={jobText}
-                onChange={handleTextChange}
-                error={!!textError}
-                helperText={textError}
-                sx={{ mb: 3 }}
-              />
-              
-              <Box sx={{ mt: 3, textAlign: 'center' }}>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  size="large"
-                  disabled={!jobText.trim() || isLoading}
-                  startIcon={isLoading ? <CircularProgress size={24} /> : null}
-                  sx={{ borderRadius: 8, minWidth: 200 }}
-                >
-                  {isLoading ? 'Processing...' : 'Parse Job Description'}
-                </Button>
-              </Box>
-            </form>
-          </TabPanel>
-        </Paper>
-      ) : (
-        <Box sx={{ mt: 4 }}>
-          <Alert severity="success" sx={{ mb: 4 }}>
-            Job description successfully parsed!
-          </Alert>
-          
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h5" gutterBottom>
+                  </div>
+                  
+                  <div className="text-center">
+                    <button
+                      type="submit"
+                      disabled={!jobText.trim() || isLoading}
+                      className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center mx-auto min-w-[200px]"
+                    >
+                      {isLoading ? (
+                        <>
+                          <div className="loading-spinner w-5 h-5 mr-2"></div>
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          <Briefcase className="w-5 h-5 mr-2" />
+                          Parse Job Description
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </TabPanel>
+            </div>
+          </div>
+        ) : (
+          <div className="max-w-6xl mx-auto">
+            {/* Success Alert */}
+            <div className="mb-8 p-4 bg-neon-900 border border-neon-700 rounded-lg text-neon-300 flex items-center fade-in">
+              <Check className="w-5 h-5 mr-3 text-neon-400" />
+              <span>Job description successfully parsed!</span>
+            </div>
+            
+            {/* Job Overview Card */}
+            <div className="card p-6 mb-8">
+              <div className="flex items-start justify-between mb-6">
+                <div className="flex-1">
+                  <h2 className="text-3xl font-bold text-white mb-2">
                     {currentJob?.title || 'Job Title'}
-                  </Typography>
-                  <Typography variant="subtitle1" color="text.secondary" gutterBottom>
-                    {currentJob?.company || 'Company'} • {currentJob?.location || 'Location'}
-                  </Typography>
-                  
-                  <Divider sx={{ my: 2 }} />
-                  
-                  <Typography variant="h6" gutterBottom>
-                    Job Description
-                  </Typography>
-                  <Typography variant="body2" paragraph>
-                    {currentJob?.description || 'No description available'}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
+                  </h2>
+                  <div className="flex items-center text-gray-400 space-x-4">
+                    <div className="flex items-center">
+                      <Building className="w-4 h-4 mr-1" />
+                      {currentJob?.company || 'Company'}
+                    </div>
+                    <div className="flex items-center">
+                      <MapPin className="w-4 h-4 mr-1" />
+                      {currentJob?.location || 'Location'}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Zap className="w-6 h-6 text-neon-400" />
+                </div>
+              </div>
+              
+              <div className="border-t border-dark-700 pt-6">
+                <h3 className="text-lg font-semibold text-white mb-4">Job Description</h3>
+                <p className="text-gray-400 leading-relaxed whitespace-pre-line">
+                  {currentJob?.description || 'No description available'}
+                </p>
+              </div>
+            </div>
             
-            <Grid item xs={12} md={6}>
-              <Card sx={{ height: '100%' }}>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    Required Skills
-                  </Typography>
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                    {currentJob?.requiredSkills?.map((skill, index) => (
-                      <Chip key={index} label={skill} color="primary" />
-                    ))}
-                    {(!currentJob?.requiredSkills || currentJob.requiredSkills.length === 0) && (
-                      <Typography variant="body2" color="text.secondary">
-                        No required skills found
-                      </Typography>
-                    )}
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
+            {/* Skills Grid */}
+            <div className="grid md:grid-cols-2 gap-8 mb-8">
+              {/* Required Skills */}
+              <div className="card p-6">
+                <div className="flex items-center mb-4">
+                  <Star className="w-6 h-6 text-neon-400 mr-3" />
+                  <h3 className="text-xl font-semibold text-white">Required Skills</h3>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {currentJob?.requiredSkills?.map((skill, index) => (
+                    <span key={index} className="badge badge-success">
+                      {skill}
+                    </span>
+                  )) || (
+                    <p className="text-gray-400">No required skills found</p>
+                  )}
+                </div>
+              </div>
+              
+              {/* Preferred Skills */}
+              <div className="card p-6">
+                <div className="flex items-center mb-4">
+                  <Clock className="w-6 h-6 text-electric-400 mr-3" />
+                  <h3 className="text-xl font-semibold text-white">Preferred Skills</h3>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {currentJob?.preferredSkills?.map((skill, index) => (
+                    <span key={index} className="badge badge-info">
+                      {skill}
+                    </span>
+                  )) || (
+                    <p className="text-gray-400">No preferred skills found</p>
+                  )}
+                </div>
+              </div>
+            </div>
             
-            <Grid item xs={12} md={6}>
-              <Card sx={{ height: '100%' }}>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    Preferred Skills
-                  </Typography>
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                    {currentJob?.preferredSkills?.map((skill, index) => (
-                      <Chip key={index} label={skill} color="secondary" variant="outlined" />
-                    ))}
-                    {(!currentJob?.preferredSkills || currentJob.preferredSkills.length === 0) && (
-                      <Typography variant="body2" color="text.secondary">
-                        No preferred skills found
-                      </Typography>
-                    )}
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-            
-            <Grid item xs={12}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    Job Description
-                  </Typography>
-                  <Typography variant="body2" sx={{ whiteSpace: 'pre-line' }}>
-                    {currentJob?.description || 'No detailed description available'}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
-          
-          <Stack direction="row" spacing={2} justifyContent="center" sx={{ mt: 4 }}>
-            <Button
-              variant="outlined"
-              onClick={() => dispatch(reset())}
-              sx={{ borderRadius: 8 }}
-            >
-              Parse Another Job
-            </Button>
-            <Button
-              variant="contained"
-              onClick={handleContinue}
-              sx={{ borderRadius: 8 }}
-            >
-              Continue to Match Results
-            </Button>
-          </Stack>
-        </Box>
-      )}
-    </Container>
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button
+                onClick={() => dispatch(reset())}
+                className="btn-secondary flex items-center justify-center"
+              >
+                <RefreshCw className="w-5 h-5 mr-2" />
+                Parse Another Job
+              </button>
+              <button
+                onClick={handleContinue}
+                className="btn-primary flex items-center justify-center"
+              >
+                Continue to Match Results
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 

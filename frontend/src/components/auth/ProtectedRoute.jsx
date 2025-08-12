@@ -3,7 +3,6 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '../../firebase/firebaseConfig';
-import { Box, CircularProgress, Typography } from '@mui/material';
 
 /**
  * Protected Route Component
@@ -23,20 +22,12 @@ const ProtectedRoute = () => {
   // Show loading spinner while Firebase auth state is being determined
   if (firebaseLoading) {
     return (
-      <Box 
-        sx={{ 
-          display: 'flex', 
-          flexDirection: 'column',
-          justifyContent: 'center', 
-          alignItems: 'center', 
-          height: '80vh' 
-        }}
-      >
-        <CircularProgress size={60} thickness={4} />
-        <Typography variant="h6" sx={{ mt: 2 }}>
+      <div className="flex flex-col justify-center items-center h-screen">
+        <div className="loading-spinner w-16 h-16"></div>
+        <h2 className="text-xl font-semibold text-white mt-4">
           Authenticating...
-        </Typography>
-      </Box>
+        </h2>
+      </div>
     );
   }
   

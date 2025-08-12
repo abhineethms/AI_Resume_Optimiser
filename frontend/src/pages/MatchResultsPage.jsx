@@ -2,31 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Container,
-  Grid,
-  Typography,
-  Paper,
-  Alert,
-  CircularProgress,
-  LinearProgress,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Fade,
-  Grow,
-} from '@mui/material';
-import {
-  Check as MatchIcon,
-  Close as MissingIcon,
-  TrendingUp as StrengthIcon,
-  TrendingDown as WeaknessIcon,
-  CompareArrows as CompareIcon,
-} from '@mui/icons-material';
+  Check,
+  X,
+  TrendingUp,
+  TrendingDown,
+  Target,
+  ArrowRight,
+  ArrowLeft,
+  BarChart3,
+  FileText,
+  AlertCircle,
+  CheckCircle
+} from 'lucide-react';
 import { compareResumeJob } from '../redux/slices/matchSlice';
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
@@ -98,532 +85,487 @@ const MatchResultsPage = () => {
     } else if (isSuccess) {
       setAnalysisProgress(100);
     }
-    
+
     return () => {
       if (timer) clearInterval(timer);
     };
   }, [isLoading, isSuccess]);
 
-  // Clean up on unmount
-  useEffect(() => {
-    return () => {
-      // We don't reset here because we want to keep the match data for the cover letter page
-    };
-  }, []);
+  // Helper function to get score-based styling
+  const getScoreColor = (score) => {
+    if (score >= 70) return 'neon';
+    if (score >= 50) return 'yellow';
+    return 'red';
+  };
 
-  // Prepare chart data
-  const getMatchScoreChartData = () => {
-    if (!currentMatch) return null;
-    
+  const getScoreClasses = (score) => {
+    const color = getScoreColor(score);
     return {
-      labels: ['Match', 'Gap'],
-      datasets: [
-        {
-          data: [currentMatch.overallScore, 100 - currentMatch.overallScore],
-          backgroundColor: ['#4caf50', '#f5f5f5'],
-          borderColor: ['#388e3c', '#e0e0e0'],
-          borderWidth: 1,
-          cutout: '70%',
-        },
-      ],
+      bg: color === 'neon' ? 'bg-neon-500' : color === 'yellow' ? 'bg-yellow-500' : 'bg-red-500',
+      text: color === 'neon' ? 'text-neon-400' : color === 'yellow' ? 'text-yellow-400' : 'text-red-400',
+      border: color === 'neon' ? 'border-neon-500' : color === 'yellow' ? 'border-yellow-500' : 'border-red-500'
     };
   };
 
-  const handleContinueToCoverLetter = () => {
-    // Save current state to localStorage before navigating
-    if (currentMatch) {
-      localStorage.setItem('currentMatch', JSON.stringify(currentMatch));
-    }
-    navigate('/cover-letter');
+  // Prepare chart data for overall match score
+  const prepareChartData = (score) => {
+    return {
+      datasets: [{
+        data: [score, 100 - score],
+        backgroundColor: [
+          score >= 70 ? 'rgba(16, 185, 129, 0.8)' : 
+          score >= 50 ? 'rgba(245, 158, 11, 0.8)' : 'rgba(239, 68, 68, 0.8)',
+          'rgba(31, 41, 55, 0.3)' // dark-800 with opacity
+        ],
+        borderColor: [
+          score >= 70 ? 'rgba(16, 185, 129, 1)' : 
+          score >= 50 ? 'rgba(245, 158, 11, 1)' : 'rgba(239, 68, 68, 1)',
+          'rgba(31, 41, 55, 0.5)'
+        ],
+        borderWidth: 2,
+        cutout: '70%'
+      }],
+    };
   };
 
-  const handleContinueToKeywordInsights = () => {
-    // Create properly structured objects to store in localStorage
-    if (currentMatch) {
-      // Store the match data
-      localStorage.setItem('currentMatch', JSON.stringify(currentMatch));
-      
-      // Get the resumeId and jobId from the redux state or from the earlier comparison
-      const resumeId = currentResume?.resumeId || currentResume?._id;
-      const jobId = currentJob?.jobId || currentJob?._id || currentJob?.id;
-      
-      console.log('Using IDs for keyword insights:', { 
-        resumeId,
-        jobId
-      });
-      
-      // Create resume and job objects with consistent _id format
-      if (resumeId) {
-        const resumeData = {
-          ...currentResume,
-          _id: resumeId
-        };
-        localStorage.setItem('currentResume', JSON.stringify(resumeData));
-        console.log('Saved resume to localStorage with ID:', resumeId);
-      } else {
-        console.error('No resumeId found for the current resume');
-        return; // Don't navigate if we don't have valid resumeId
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false
+      },
+      tooltip: {
+        enabled: false
       }
-      
-      if (jobId) {
-        const jobData = {
-          ...currentJob,
-          _id: jobId
-        };
-        localStorage.setItem('currentJob', JSON.stringify(jobData));
-        console.log('Saved job to localStorage with ID:', jobId);
-      } else {
-        console.error('No jobId found for the current job');
-        return; // Don't navigate if we don't have valid jobId
-      }
-    } else {
-      console.error('Cannot navigate to keyword insights - no match data available');
-      return; // Don't navigate if we don't have the required data
     }
-    
-    navigate('/keyword-insights');
   };
 
-  // Loading animation component
-  const LoadingAnimation = () => (
-    <Paper 
-      elevation={3} 
-      sx={{ 
-        p: 4, 
-        mt: 4, 
-        borderRadius: 2,
-        backgroundColor: (theme) => theme.palette.mode === 'dark' ? '#1e1e1e' : '#fff',
-      }}
-    >
-      <Box sx={{ 
-        position: 'relative', 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        py: 6
-      }}>
-        <Box sx={{ position: 'relative', mb: 4 }}>
-          <CircularProgress 
-            variant="determinate" 
-            value={analysisProgress} 
-            size={120} 
-            thickness={4} 
-            sx={{ 
-              color: (theme) => theme.palette.primary.light,
-            }} 
-          />
-          <Box sx={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            bottom: 0,
-            right: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-            <Typography variant="h4" component="div" color="primary">
-              {Math.round(analysisProgress)}%
-            </Typography>
-          </Box>
-        </Box>
-        
-        <Grow in={true} timeout={1000}>
-          <Box sx={{ textAlign: 'center', maxWidth: 500 }}>
-            <Typography variant="h6" gutterBottom>
-              Analyzing Resume-Job Match
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Our AI is comparing your resume with the job description to identify matching skills, 
-              experience gaps, and provide personalized recommendations.
-            </Typography>
-          </Box>
-        </Grow>
-        
-        <Box sx={{ width: '100%', mt: 4, display: 'flex', justifyContent: 'center' }}>
-          {[1, 2, 3, 4, 5].map((dot) => (
-            <Fade 
-              key={dot}
-              in={true} 
-              style={{ 
-                transitionDelay: `${dot * 150}ms`,
-                animationIterationCount: 'infinite',
-              }}
-            >
-              <Box
-                sx={{
-                  width: 12,
-                  height: 12,
-                  mx: 0.5,
-                  bgcolor: 'primary.main',
-                  borderRadius: '50%',
-                  animation: 'bounce 1.4s infinite ease-in-out both',
-                  animationDelay: `${dot * 0.16}s`,
-                  '@keyframes bounce': {
-                    '0%, 80%, 100%': {
-                      transform: 'scale(0)',
-                    },
-                    '40%': {
-                      transform: 'scale(1)',
-                    },
-                  },
-                }}
-              />
-            </Fade>
-          ))}
-        </Box>
-        
-        <Grid container spacing={2} sx={{ mt: 6, maxWidth: 600 }}>
-          <Grid item xs={12}>
-            <Fade in={analysisProgress > 20} timeout={800}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                <CompareIcon sx={{ mr: 1, color: 'primary.main' }} />
-                <Typography variant="body2" color="text.secondary">
-                  Comparing skills and qualifications...
-                </Typography>
-              </Box>
-            </Fade>
-          </Grid>
-          <Grid item xs={12}>
-            <Fade in={analysisProgress > 40} timeout={800}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                <StrengthIcon sx={{ mr: 1, color: 'success.main' }} />
-                <Typography variant="body2" color="text.secondary">
-                  Identifying your strengths...
-                </Typography>
-              </Box>
-            </Fade>
-          </Grid>
-          <Grid item xs={12}>
-            <Fade in={analysisProgress > 60} timeout={800}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                <WeaknessIcon sx={{ mr: 1, color: 'warning.main' }} />
-                <Typography variant="body2" color="text.secondary">
-                  Finding improvement areas...
-                </Typography>
-              </Box>
-            </Fade>
-          </Grid>
-          <Grid item xs={12}>
-            <Fade in={analysisProgress > 80} timeout={800}>
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <MatchIcon sx={{ mr: 1, color: 'info.main' }} />
-                <Typography variant="body2" color="text.secondary">
-                  Calculating overall match score...
-                </Typography>
-              </Box>
-            </Fade>
-          </Grid>
-        </Grid>
-      </Box>
-    </Paper>
-  );
+  // Loading state with animated progress
+  if (isLoading) {
+    const progressSteps = [
+      { threshold: 20, text: 'Comparing skills and qualifications...', icon: Target },
+      { threshold: 40, text: 'Identifying your strengths...', icon: TrendingUp },
+      { threshold: 60, text: 'Finding improvement areas...', icon: TrendingDown },
+      { threshold: 80, text: 'Calculating match score...', icon: BarChart3 }
+    ];
 
-  if (isLoading || (!currentMatch && !isError)) {
     return (
-      <Container maxWidth="lg" className="page-container">
-        <ProcessStepper activeStep={2} />
-        <Typography variant="h4" component="h1" className="section-title" gutterBottom>
-          Match Results
-        </Typography>
-        <Typography variant="body1" paragraph>
-          We're analyzing how your resume matches with the job requirements.
-        </Typography>
-        <LoadingAnimation />
-      </Container>
+      <div className="page-container">
+        <div className="content-container">
+          <div className="mb-8">
+            <ProcessStepper activeStep={2} />
+          </div>
+
+          <div className="text-center">
+            <h1 className="text-4xl font-bold text-white mb-4">
+              Analyzing Your <span className="text-gradient">Match</span>
+            </h1>
+            <p className="text-xl text-gray-400 mb-12 max-w-2xl mx-auto">
+              Our AI is comparing your resume with the job requirements. This process typically takes a few moments.
+            </p>
+
+            {/* Progress Circle */}
+            <div className="relative w-32 h-32 mx-auto mb-8">
+              <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 128 128">
+                {/* Background circle */}
+                <circle
+                  cx="64"
+                  cy="64"
+                  r="56"
+                  stroke="currentColor"
+                  strokeWidth="8"
+                  fill="none"
+                  className="text-dark-700"
+                />
+                {/* Progress circle */}
+                <circle
+                  cx="64"
+                  cy="64"
+                  r="56"
+                  stroke="currentColor"
+                  strokeWidth="8"
+                  fill="none"
+                  strokeDasharray={351.86}
+                  strokeDashoffset={351.86 - (351.86 * analysisProgress) / 100}
+                  className="text-neon-500 transition-all duration-300 ease-out"
+                  strokeLinecap="round"
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-white">
+                    {Math.round(analysisProgress)}%
+                  </div>
+                  <div className="text-xs text-gray-400">Complete</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Progress Steps */}
+            <div className="space-y-4 max-w-md mx-auto">
+              {progressSteps.map((step, index) => {
+                const Icon = step.icon;
+                const isActive = analysisProgress >= step.threshold;
+                const isComplete = analysisProgress > step.threshold + 20;
+
+                return (
+                  <div
+                    key={index}
+                    className={`flex items-center space-x-4 p-4 rounded-lg border transition-all duration-500 ${
+                      isActive 
+                        ? 'bg-dark-800 border-neon-500 shadow-glow-sm' 
+                        : 'bg-dark-900 border-dark-700'
+                    } ${isActive ? 'fade-in' : 'opacity-50'}`}
+                    style={{ animationDelay: `${index * 0.2}s` }}
+                  >
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                      isComplete 
+                        ? 'bg-neon-500 text-dark-950' 
+                        : isActive 
+                        ? 'bg-neon-900 text-neon-400' 
+                        : 'bg-dark-700 text-gray-500'
+                    }`}>
+                      {isComplete ? <Check className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
+                    </div>
+                    <span className={`font-medium ${isActive ? 'text-white' : 'text-gray-500'}`}>
+                      {step.text}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Animated dots */}
+            <div className="flex justify-center items-center space-x-2 mt-8">
+              {[0, 1, 2].map((i) => (
+                <div
+                  key={i}
+                  className="w-2 h-2 bg-neon-500 rounded-full animate-bounce"
+                  style={{ animationDelay: `${i * 0.2}s` }}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
     );
   }
 
+  // Error state
   if (isError) {
     return (
-      <Container maxWidth="lg" className="page-container">
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {message || 'An error occurred while comparing your resume with the job description.'}
-        </Alert>
-        <Box sx={{ textAlign: 'center', mt: 4 }}>
-          <Button 
-            variant="contained" 
-            onClick={() => dispatch(compareResumeJob({ 
-              resumeId: currentResume._id, 
-              jobId: currentJob._id 
-            }))}
-          >
-            Try Again
-          </Button>
-        </Box>
-      </Container>
+      <div className="page-container">
+        <div className="content-container">
+          <div className="card p-8 text-center">
+            <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
+            <h2 className="text-2xl font-semibold text-white mb-4">Analysis Error</h2>
+            <p className="text-gray-400 mb-6">{message || 'An error occurred during analysis'}</p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button 
+                onClick={() => navigate('/job-match')}
+                className="btn-secondary"
+              >
+                <ArrowLeft className="w-5 h-5 mr-2" />
+                Back to Job Matcher
+              </button>
+              <button 
+                onClick={() => window.location.reload()}
+                className="btn-primary"
+              >
+                Try Again
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     );
   }
 
+  // No match data
   if (!currentMatch) {
     return (
-      <Container maxWidth="lg" className="page-container">
-        <Box sx={{ textAlign: 'center', py: 8 }}>
-          <CircularProgress size={60} />
-          <Typography variant="h5" sx={{ mt: 3 }}>
-            Preparing match results...
-          </Typography>
-        </Box>
-      </Container>
+      <div className="page-container">
+        <div className="content-container">
+          <div className="card p-8 text-center">
+            <Target className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h2 className="text-2xl font-semibold text-white mb-4">No Match Results</h2>
+            <p className="text-gray-400 mb-6">
+              We couldn't find match results. Please ensure you have uploaded both your resume and job description.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button 
+                onClick={() => navigate('/resume')}
+                className="btn-secondary"
+              >
+                Upload Resume
+              </button>
+              <button 
+                onClick={() => navigate('/job-match')}
+                className="btn-primary"
+              >
+                Add Job Description
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     );
   }
 
+  const { overallScore, categoryScores, matchedSkills, missingSkills, strengths, improvementAreas, summary } = currentMatch;
+  const scoreClasses = getScoreClasses(overallScore);
+
   return (
-    <Container maxWidth="lg" className="page-container">
-      <ProcessStepper activeStep={2} />
-      <Typography variant="h4" component="h1" className="section-title" gutterBottom>
-        Match Results
-      </Typography>
-      <Typography variant="body1" paragraph>
-        See how your resume matches with the job requirements and where you can improve.
-      </Typography>
+    <div className="page-container">
+      <div className="content-container">
+        {/* Process Stepper */}
+        <div className="mb-8">
+          <ProcessStepper activeStep={2} />
+        </div>
 
-      {/* Overall Match Score */}
-      <Paper elevation={3} sx={{ p: 4, mb: 4, borderRadius: 2 }}>
-        <Grid container spacing={4} alignItems="center">
-          <Grid item xs={12} md={4}>
-            <Box sx={{ position: 'relative', width: '100%', maxWidth: 200, mx: 'auto' }}>
-              <Doughnut data={getMatchScoreChartData()} options={{ plugins: { legend: { display: false } } }} />
-              <Box
-                sx={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  textAlign: 'center',
-                }}
-              >
-                <Typography variant="h3" color="primary" fontWeight="bold">
-                  {currentMatch.overallScore}%
-                </Typography>
-                <Typography variant="body2">Match Score</Typography>
-              </Box>
-            </Box>
-          </Grid>
-          <Grid item xs={12} md={8}>
-            <Typography variant="h5" gutterBottom>
-              {currentMatch.overallScore >= 80
-                ? 'Excellent Match!'
-                : currentMatch.overallScore >= 60
-                ? 'Good Match'
-                : 'Needs Improvement'}
-            </Typography>
-            <Typography variant="body1" paragraph>
-              {currentMatch.summary}
-            </Typography>
-            <Box sx={{ mt: 2 }}>
-              <Typography variant="subtitle1" gutterBottom>
-                Match Breakdown:
-              </Typography>
-              {currentMatch.categoryScores.map((category, index) => (
-                <Box key={index} sx={{ mb: 1 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                    <Typography variant="body2">{category.category}</Typography>
-                    <Typography variant="body2" fontWeight="bold">
-                      {category.score}%
-                    </Typography>
-                  </Box>
-                  <LinearProgress
-                    variant="determinate"
-                    value={category.score}
-                    sx={{
-                      height: 8,
-                      borderRadius: 4,
-                      backgroundColor: 'rgba(0,0,0,0.1)',
-                      '& .MuiLinearProgress-bar': {
-                        backgroundColor: category.score >= 80 ? '#4caf50' : category.score >= 60 ? '#ff9800' : '#f44336',
-                      },
-                    }}
-                  />
-                </Box>
-              ))}
-            </Box>
-          </Grid>
-        </Grid>
-      </Paper>
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-white mb-4">
+            Match <span className="text-gradient">Results</span>
+          </h1>
+          <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+            Here's how well your resume matches the job requirements
+          </p>
+        </div>
 
-      {/* Skills Category Analysis */}
-      <Paper elevation={3} sx={{ p: 4, my: 4, borderRadius: 2 }}>
-        <Typography variant="h6" gutterBottom>
-          Skills Category Analysis
-        </Typography>
-        <Box sx={{ mt: 3 }}>
-          {currentMatch && currentMatch.categoryScores && currentMatch.categoryScores.map((category, index) => (
-            <Box key={index} sx={{ mb: 2 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                <Typography variant="body1">{category.category}</Typography>
-                <Typography variant="body1" fontWeight="medium">{category.score}%</Typography>
-              </Box>
-              <LinearProgress 
-                variant="determinate" 
-                value={category.score} 
-                sx={{ 
-                  height: 10, 
-                  borderRadius: 5,
-                  bgcolor: 'rgba(0, 0, 0, 0.08)',
-                  '& .MuiLinearProgress-bar': {
-                    bgcolor: 'primary.main',
-                  }
-                }} 
-              />
-            </Box>
-          ))}
-        </Box>
-      </Paper>
+        {/* Overall Match Score Section */}
+        <div className="grid lg:grid-cols-2 gap-8 mb-8">
+          {/* Chart and Score */}
+          <div className="card p-8 text-center">
+            <h2 className="text-2xl font-semibold text-white mb-6">Overall Match Score</h2>
+            
+            <div className="relative w-48 h-48 mx-auto mb-6">
+              <Doughnut data={prepareChartData(overallScore)} options={chartOptions} />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-center">
+                  <div className={`text-4xl font-bold ${scoreClasses.text}`}>
+                    {overallScore}%
+                  </div>
+                  <div className="text-gray-400 text-sm">Match</div>
+                </div>
+              </div>
+            </div>
 
-      {/* Skills Comparison */}
-      <Grid container spacing={4}>
-        <Grid item xs={12} md={6}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Skills Match
-              </Typography>
-              <List dense>
-                {currentMatch.matchedSkills.map((skill, index) => (
-                  <ListItem key={index}>
-                    <ListItemIcon>
-                      <MatchIcon color="success" />
-                    </ListItemIcon>
-                    <ListItemText 
-                      primary={skill} 
-                      secondary={
-                        currentJob.requiredSkills.includes(skill) 
-                          ? 'Required Skill' 
-                          : 'Preferred Skill'
-                      }
-                    />
-                  </ListItem>
-                ))}
-              </List>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Missing Skills
-              </Typography>
-              <List dense>
-                {currentMatch.missingSkills.map((skill, index) => (
-                  <ListItem key={index}>
-                    <ListItemIcon>
-                      <MissingIcon color="error" />
-                    </ListItemIcon>
-                    <ListItemText 
-                      primary={skill} 
-                      secondary={
-                        currentJob.requiredSkills.includes(skill) 
-                          ? 'Required Skill' 
-                          : 'Preferred Skill'
-                      }
-                    />
-                  </ListItem>
-                ))}
-              </List>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-
-      {/* Strengths and Improvement Areas */}
-      <Grid container spacing={4} sx={{ mb: 4 }}>
-        <Grid item xs={12} md={6}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent>
-              <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
-                <StrengthIcon color="success" sx={{ mr: 1 }} />
-                Your Strengths
-              </Typography>
-              <List>
-                {currentMatch.strengths.map((strength, index) => (
-                  <ListItem key={index}>
-                    <ListItemText primary={strength} />
-                  </ListItem>
-                ))}
-              </List>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent>
-              <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
-                <WeaknessIcon color="error" sx={{ mr: 1 }} />
-                Areas to Improve
-              </Typography>
-              {currentMatch.improvementAreas && currentMatch.improvementAreas.length > 0 ? (
-                <List>
-                  {currentMatch.improvementAreas.map((area, index) => (
-                    <ListItem key={index}>
-                      <ListItemText primary={area} />
-                    </ListItem>
-                  ))}
-                </List>
+            <div className={`inline-flex items-center px-4 py-2 rounded-full border ${
+              overallScore >= 70 
+                ? 'bg-neon-900 border-neon-700 text-neon-300'
+                : overallScore >= 50
+                ? 'bg-yellow-900 border-yellow-700 text-yellow-300'
+                : 'bg-red-900 border-red-700 text-red-300'
+            }`}>
+              {overallScore >= 70 ? (
+                <CheckCircle className="w-5 h-5 mr-2" />
+              ) : overallScore >= 50 ? (
+                <AlertCircle className="w-5 h-5 mr-2" />
               ) : (
-                <Typography variant="body2" color="text.secondary">
-                  No specific improvement areas were identified. Your resume appears to match well with this job's requirements.
-                </Typography>
+                <X className="w-5 h-5 mr-2" />
               )}
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+              <span className="font-medium">
+                {overallScore >= 70 ? 'Excellent Match' : 
+                 overallScore >= 50 ? 'Good Match' : 
+                 'Needs Improvement'}
+              </span>
+            </div>
 
-      {/* Next Steps */}
-      <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
-        <Typography variant="h6" gutterBottom>
-          Next Steps
-        </Typography>
-        <Typography variant="body1" paragraph>
-          Based on your match results, we recommend the following next steps:
-        </Typography>
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
-            <Card sx={{ bgcolor: 'primary.light', color: 'primary.contrastText' }}>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Analyze Keyword Relevance
-                </Typography>
-                <Typography variant="body2" paragraph>
-                  Get detailed insights on how well your resume's keywords align with the job requirements and identify areas for improvement.
-                </Typography>
-                <Button 
-                  variant="contained" 
-                  color="secondary"
-                  onClick={handleContinueToKeywordInsights}
-                  sx={{ mt: 1 }}
-                >
-                  View Keyword Insights
-                </Button>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Card sx={{ bgcolor: 'secondary.light', color: 'secondary.contrastText' }}>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Generate a Tailored Cover Letter
-                </Typography>
-                <Typography variant="body2" paragraph>
-                  Create a personalized cover letter that highlights your matching skills and addresses potential gaps.
-                </Typography>
-                <Button 
-                  variant="contained" 
-                  color="primary"
-                  onClick={handleContinueToCoverLetter}
-                  sx={{ mt: 1 }}
-                >
-                  Create Cover Letter
-                </Button>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
-      </Paper>
-    </Container>
+            {summary && (
+              <div className="mt-6 p-4 bg-dark-800 rounded-lg border border-dark-600">
+                <p className="text-gray-300 text-sm leading-relaxed">{summary}</p>
+              </div>
+            )}
+          </div>
+
+          {/* Category Breakdown */}
+          <div className="card p-8">
+            <h3 className="text-xl font-semibold text-white mb-6">Category Breakdown</h3>
+            <div className="space-y-4">
+              {categoryScores && categoryScores.length > 0 ? (
+                categoryScores.map((category, index) => {
+                  const categoryClasses = getScoreClasses(category.score);
+                  return (
+                    <div key={index} className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-300 font-medium">{category.category}</span>
+                        <span className={`font-semibold ${categoryClasses.text}`}>
+                          {category.score}%
+                        </span>
+                      </div>
+                      <div className="progress-bar h-2">
+                        <div 
+                          className={`progress-fill h-full ${categoryClasses.bg}`}
+                          style={{ width: `${category.score}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <p className="text-gray-400 text-center py-8">
+                  No category breakdown available
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Skills Comparison */}
+        <div className="grid lg:grid-cols-2 gap-8 mb-8">
+          {/* Matched Skills */}
+          <div className="card p-8">
+            <div className="flex items-center mb-6">
+              <Check className="w-6 h-6 text-neon-400 mr-3" />
+              <h3 className="text-xl font-semibold text-white">Matched Skills</h3>
+              <span className="ml-auto bg-neon-900 text-neon-300 px-3 py-1 rounded-full text-sm font-medium">
+                {matchedSkills?.length || 0}
+              </span>
+            </div>
+            
+            {matchedSkills && matchedSkills.length > 0 ? (
+              <div className="space-y-3">
+                {matchedSkills.map((skill, index) => (
+                  <div key={index} className="flex items-center p-3 bg-neon-900 border border-neon-700 rounded-lg">
+                    <Check className="w-5 h-5 text-neon-400 mr-3 flex-shrink-0" />
+                    <span className="text-neon-300 font-medium">{skill}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-400 text-center py-8">No matched skills identified</p>
+            )}
+          </div>
+
+          {/* Missing Skills */}
+          <div className="card p-8">
+            <div className="flex items-center mb-6">
+              <X className="w-6 h-6 text-red-400 mr-3" />
+              <h3 className="text-xl font-semibold text-white">Missing Skills</h3>
+              <span className="ml-auto bg-red-900 text-red-300 px-3 py-1 rounded-full text-sm font-medium">
+                {missingSkills?.length || 0}
+              </span>
+            </div>
+            
+            {missingSkills && missingSkills.length > 0 ? (
+              <div className="space-y-3">
+                {missingSkills.map((skill, index) => (
+                  <div key={index} className="flex items-center p-3 bg-red-900 border border-red-700 rounded-lg">
+                    <X className="w-5 h-5 text-red-400 mr-3 flex-shrink-0" />
+                    <span className="text-red-300 font-medium">{skill}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-400 text-center py-8">All required skills are present!</p>
+            )}
+          </div>
+        </div>
+
+        {/* Strengths vs Improvement Areas */}
+        <div className="grid lg:grid-cols-2 gap-8 mb-8">
+          {/* Strengths */}
+          <div className="card p-8">
+            <div className="flex items-center mb-6">
+              <TrendingUp className="w-6 h-6 text-neon-400 mr-3" />
+              <h3 className="text-xl font-semibold text-white">Your Strengths</h3>
+            </div>
+            
+            {strengths && strengths.length > 0 ? (
+              <div className="space-y-3">
+                {strengths.map((strength, index) => (
+                  <div key={index} className="flex items-start p-4 bg-dark-800 border border-dark-600 rounded-lg">
+                    <TrendingUp className="w-5 h-5 text-neon-400 mr-3 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-300">{strength}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-400 text-center py-8">No specific strengths identified</p>
+            )}
+          </div>
+
+          {/* Improvement Areas */}
+          <div className="card p-8">
+            <div className="flex items-center mb-6">
+              <TrendingDown className="w-6 h-6 text-yellow-400 mr-3" />
+              <h3 className="text-xl font-semibold text-white">Areas to Improve</h3>
+            </div>
+            
+            {improvementAreas && improvementAreas.length > 0 ? (
+              <div className="space-y-3">
+                {improvementAreas.map((area, index) => (
+                  <div key={index} className="flex items-start p-4 bg-dark-800 border border-dark-600 rounded-lg">
+                    <TrendingDown className="w-5 h-5 text-yellow-400 mr-3 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-300">{area}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <CheckCircle className="w-12 h-12 text-neon-400 mx-auto mb-3" />
+                <p className="text-neon-400 font-medium">Excellent! No major improvement areas identified.</p>
+                <p className="text-gray-400 text-sm mt-2">Your resume is well-aligned with the job requirements.</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Next Steps */}
+        <div className="grid md:grid-cols-2 gap-6 mb-8">
+          <div className="card card-hover p-8 text-center">
+            <BarChart3 className="w-12 h-12 text-neon-400 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-white mb-3">Detailed Keyword Analysis</h3>
+            <p className="text-gray-400 mb-6">
+              Get deeper insights into keyword matching and optimization opportunities.
+            </p>
+            <button 
+              onClick={() => {
+                // Save current match to localStorage for keyword insights
+                localStorage.setItem('currentMatch', JSON.stringify(currentMatch));
+                navigate('/keyword-insights');
+              }}
+              className="btn-primary w-full"
+            >
+              View Keyword Insights
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </button>
+          </div>
+
+          <div className="card card-hover p-8 text-center">
+            <FileText className="w-12 h-12 text-electric-400 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-white mb-3">Generate Cover Letter</h3>
+            <p className="text-gray-400 mb-6">
+              Create a personalized cover letter based on your match results.
+            </p>
+            <button 
+              onClick={() => {
+                // Save current match to localStorage for cover letter generation
+                localStorage.setItem('currentMatch', JSON.stringify(currentMatch));
+                navigate('/cover-letter');
+              }}
+              className="btn-secondary w-full"
+            >
+              Create Cover Letter
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </button>
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <div className="flex flex-col sm:flex-row gap-4 justify-between">
+          <button 
+            onClick={() => navigate('/job-match')}
+            className="btn-ghost"
+          >
+            <ArrowLeft className="w-5 h-5 mr-2" />
+            Back to Job Matcher
+          </button>
+        </div>
+      </div>
+    </div>
   );
 };
 

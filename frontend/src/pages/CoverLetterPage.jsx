@@ -2,30 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import {
-  Box,
-  Button,
-  Container,
-  Typography,
-  Paper,
-  TextField,
-  CircularProgress,
-  Alert,
-  Card,
-  CardContent,
-  Grid,
-  Divider,
-  IconButton,
-  Tooltip,
-  Snackbar,
-  Grow,
-  Fade,
-} from '@mui/material';
-import {
-  ContentCopy as CopyIcon,
-  Download as DownloadIcon,
-  Edit as EditIcon,
-  Refresh as RefreshIcon,
-} from '@mui/icons-material';
+  Copy,
+  Download,
+  Edit3,
+  RefreshCw,
+  Mail,
+  Check,
+  AlertCircle,
+  Lightbulb,
+  Search,
+  Target,
+  FileText,
+  ArrowRight,
+  X
+} from 'lucide-react';
 import {
   generateCoverLetter,
   setCurrentMatch
@@ -227,99 +217,74 @@ const CoverLetterPage = () => {
 
   // Loading animation component
   const LoadingAnimation = () => (
-    <Container maxWidth="lg" className="page-container">
-      <Box sx={{ textAlign: 'center', py: 4 }}>
-        <Paper 
-          elevation={3} 
-          sx={{ 
-            p: 4, 
-            mt: 4, 
-            borderRadius: 2,
-            backgroundColor: (theme) => theme.palette.mode === 'dark' ? '#1e1e1e' : '#fff',
-          }}
-        >
-          <Box sx={{ 
-            position: 'relative', 
-            display: 'flex', 
-            flexDirection: 'column', 
-            alignItems: 'center', 
-            justifyContent: 'center',
-            py: 6
-          }}>
-            <Box sx={{ position: 'relative', mb: 4 }}>
-              <CircularProgress 
-                variant="determinate" 
-                value={generationProgress} 
-                size={120} 
-                thickness={4} 
-                sx={{ 
-                  color: (theme) => theme.palette.primary.light,
-                }} 
-              />
-              <Box sx={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                bottom: 0,
-                right: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}>
-                <Typography variant="h4" component="div" color="primary">
-                  {Math.round(generationProgress)}%
-                </Typography>
-              </Box>
-            </Box>
+    <div className="page-container">
+      <div className="content-container">
+        <div className="mb-8">
+          <ProcessStepper activeStep={4} />
+        </div>
+        
+        <div className="card p-8">
+          <div className="flex flex-col items-center justify-center text-center">
+            {/* Progress Circle */}
+            <div className="relative w-32 h-32 mb-8">
+              <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 128 128">
+                <circle
+                  cx="64"
+                  cy="64"
+                  r="56"
+                  stroke="currentColor"
+                  strokeWidth="8"
+                  fill="none"
+                  className="text-dark-700"
+                />
+                <circle
+                  cx="64"
+                  cy="64"
+                  r="56"
+                  stroke="currentColor"
+                  strokeWidth="8"
+                  fill="none"
+                  strokeDasharray={351.86}
+                  strokeDashoffset={351.86 - (351.86 * generationProgress) / 100}
+                  className="text-neon-500 transition-all duration-300 ease-out"
+                  strokeLinecap="round"
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-white">
+                    {Math.round(generationProgress)}%
+                  </div>
+                  <div className="text-xs text-gray-400">Generating</div>
+                </div>
+              </div>
+            </div>
             
-            <Grow in={true} timeout={1000}>
-              <Box sx={{ textAlign: 'center', maxWidth: 500 }}>
-                <Typography variant="h6" gutterBottom>
-                  Crafting Your Cover Letter
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Our AI is analyzing your resume and the job description to create a personalized cover letter 
-                  that highlights your relevant skills and experiences.
-                </Typography>
-              </Box>
-            </Grow>
+            <div className="max-w-md fade-in">
+              <h2 className="text-2xl font-bold text-white mb-4 flex items-center justify-center">
+                <Mail className="w-6 h-6 mr-3 text-neon-400" />
+                Crafting Your Cover Letter
+              </h2>
+              <p className="text-gray-400 leading-relaxed">
+                Our AI is analyzing your resume and the job description to create a personalized cover letter 
+                that highlights your relevant skills and experiences.
+              </p>
+            </div>
             
-            <Box sx={{ width: '100%', mt: 4, display: 'flex', justifyContent: 'center' }}>
-              {[1, 2, 3, 4, 5].map((dot) => (
-                <Fade 
-                  key={dot}
-                  in={true} 
-                  style={{ 
-                    transitionDelay: `${dot * 150}ms`,
-                    animationIterationCount: 'infinite',
-                  }}
-                >
-                  <Box
-                    sx={{
-                      width: 12,
-                      height: 12,
-                      mx: 0.5,
-                      bgcolor: 'primary.main',
-                      borderRadius: '50%',
-                      animation: 'bounce 1.4s infinite ease-in-out both',
-                      animationDelay: `${dot * 0.16}s`,
-                      '@keyframes bounce': {
-                        '0%, 80%, 100%': {
-                          transform: 'scale(0)',
-                        },
-                        '40%': {
-                          transform: 'scale(1)',
-                        },
-                      },
-                    }}
-                  />
-                </Fade>
+            {/* Animated dots */}
+            <div className="flex justify-center items-center space-x-2 mt-8">
+              {[0, 1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  className="w-3 h-3 bg-neon-500 rounded-full animate-bounce"
+                  style={{ animationDelay: `${i * 0.2}s` }}
+                />
               ))}
-            </Box>
-          </Box>
-        </Paper>
-      </Box>
-    </Container>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 
   if (isLoading) {
@@ -328,238 +293,221 @@ const CoverLetterPage = () => {
 
   if (isError) {
     return (
-      <Container maxWidth="lg" className="page-container">
-        <Box sx={{ mt: 4 }}>
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {message || 'Failed to generate cover letter. Please try again.'}
-          </Alert>
-          <Button 
-            variant="contained" 
-            color="primary" 
-            onClick={handleRegenerate}
-            startIcon={<RefreshIcon />}
-          >
-            Try Again
-          </Button>
-        </Box>
-      </Container>
+      <div className="page-container">
+        <div className="content-container">
+          <div className="mb-8">
+            <ProcessStepper activeStep={4} />
+          </div>
+          
+          <div className="card p-8 text-center">
+            <div className="mb-6 p-4 bg-red-900 border border-red-700 rounded-lg text-red-300 flex items-center justify-center max-w-md mx-auto">
+              <AlertCircle className="w-5 h-5 mr-3 text-red-400" />
+              <span>{message || 'Failed to generate cover letter. Please try again.'}</span>
+            </div>
+            <button 
+              onClick={handleRegenerate}
+              className="btn-primary flex items-center justify-center mx-auto"
+            >
+              <RefreshCw className="w-5 h-5 mr-2" />
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Container maxWidth="lg" className="page-container">
-      {/* Page Header */}
-      <Box sx={{ mt: 4, mb: 2 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Your Tailored Cover Letter
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          Customize this AI-generated cover letter to highlight your qualifications for {currentJob?.title} at {currentJob?.company}.
-        </Typography>
-      </Box>
+    <div className="page-container">
+      <div className="content-container">
+        <div className="mb-8">
+          <ProcessStepper activeStep={4} />
+        </div>
 
-      {/* Process Stepper */}
-      <Box sx={{ mb: 4 }}>
-        <ProcessStepper activeStep={2} />
-      </Box>
+        {/* Page Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-white mb-4">
+            Your Tailored <span className="text-gradient">Cover Letter</span>
+          </h1>
+          <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+            Customize this AI-generated cover letter to highlight your qualifications for{' '}
+            <span className="text-neon-400 font-medium">{currentJob?.title}</span> at{' '}
+            <span className="text-electric-400 font-medium">{currentJob?.company}</span>.
+          </p>
+        </div>
 
-      {/* Cover Letter Actions */}
-      <Paper elevation={3} sx={{ p: 2, mb: 4, borderRadius: 2 }}>
-        <Grid container spacing={2} alignItems="center">
-          <Grid item>
-            <Typography variant="body1" fontWeight="medium">
-              Cover Letter Actions:
-            </Typography>
-          </Grid>
-          <Grid item>
-            <Tooltip title={editMode ? "Save Changes" : "Edit Cover Letter"}>
-              <IconButton onClick={toggleEditMode} color={editMode ? "success" : "primary"}>
-                <EditIcon />
-              </IconButton>
-            </Tooltip>
-          </Grid>
-          <Grid item>
-            <Tooltip title="Copy to Clipboard">
-              <IconButton onClick={handleCopy} color="primary">
-                <CopyIcon />
-              </IconButton>
-            </Tooltip>
-          </Grid>
-          <Grid item>
-            <Tooltip title="Download as Text File">
-              <IconButton onClick={handleDownload} color="primary">
-                <DownloadIcon />
-              </IconButton>
-            </Tooltip>
-          </Grid>
-          <Grid item>
-            <Tooltip title="Regenerate Cover Letter">
-              <IconButton onClick={handleRegenerate} color="primary">
-                <RefreshIcon />
-              </IconButton>
-            </Tooltip>
-          </Grid>
-          <Grid item xs />
-          <Grid item>
-            <Grow in={true} timeout={800}>
-              <Typography variant="body2" color="text.secondary">
-                Matched to: <strong>{currentJob?.title}</strong> at <strong>{currentJob?.company}</strong>
-              </Typography>
-            </Grow>
-          </Grid>
-        </Grid>
-      </Paper>
+        {/* Cover Letter Actions */}
+        <div className="card p-6 mb-8">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center">
+              <Mail className="w-5 h-5 text-neon-400 mr-3" />
+              <span className="text-lg font-medium text-white">Cover Letter Actions:</span>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={toggleEditMode}
+                className={`p-3 rounded-lg transition-all duration-200 tooltip ${
+                  editMode 
+                    ? 'bg-neon-500 text-dark-950 hover:bg-neon-600' 
+                    : 'bg-dark-700 text-gray-300 hover:bg-dark-600 hover:text-neon-400'
+                }`}
+                title={editMode ? "Save Changes" : "Edit Cover Letter"}
+              >
+                <Edit3 className="w-5 h-5" />
+              </button>
+              
+              <button
+                onClick={handleCopy}
+                className="p-3 bg-dark-700 text-gray-300 hover:bg-dark-600 hover:text-neon-400 rounded-lg transition-all duration-200"
+                title="Copy to Clipboard"
+              >
+                <Copy className="w-5 h-5" />
+              </button>
+              
+              <button
+                onClick={handleDownload}
+                className="p-3 bg-dark-700 text-gray-300 hover:bg-dark-600 hover:text-electric-400 rounded-lg transition-all duration-200"
+                title="Download as Text File"
+              >
+                <Download className="w-5 h-5" />
+              </button>
+              
+              <button
+                onClick={handleRegenerate}
+                className="p-3 bg-dark-700 text-gray-300 hover:bg-dark-600 hover:text-neon-400 rounded-lg transition-all duration-200"
+                title="Regenerate Cover Letter"
+              >
+                <RefreshCw className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="w-full sm:w-auto fade-in">
+              <p className="text-gray-400 text-sm">
+                Matched to: <span className="text-neon-400 font-medium">{currentJob?.title}</span> at{' '}
+                <span className="text-electric-400 font-medium">{currentJob?.company}</span>
+              </p>
+            </div>
+          </div>
+        </div>
 
-      {/* Cover Letter Content */}
-      <Paper elevation={3} sx={{ p: 4, mb: 4, borderRadius: 2 }}>
-        <Grow in={true} timeout={500}>
-          <Typography variant="h6" gutterBottom>
-            Cover Letter
-          </Typography>
-        </Grow>
-        <Divider sx={{ mb: 3 }} />
-        
-        {editMode ? (
-          <TextField
-            fullWidth
-            multiline
-            variant="outlined"
-            value={editedCoverLetter}
-            onChange={handleCoverLetterChange}
-            minRows={15}
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-                fontSize: '1rem',
-                lineHeight: 1.8,
-              }
-            }}
-          />
-        ) : (
-          <Fade in={true} timeout={800}>
-            <Box 
-              sx={{ 
-                whiteSpace: 'pre-wrap', 
-                fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-                fontSize: '1rem',
-                lineHeight: 1.8,
-                p: 2,
-                border: '1px solid #e0e0e0',
-                borderRadius: 1,
-                minHeight: '400px',
-                bgcolor: '#fafafa'
-              }}
-            >
-              {editedCoverLetter || coverLetter}
-            </Box>
-          </Fade>
-        )}
-      </Paper>
+        {/* Cover Letter Content */}
+        <div className="card p-6 mb-8">
+          <div className="flex items-center mb-6 fade-in">
+            <FileText className="w-6 h-6 text-neon-400 mr-3" />
+            <h2 className="text-2xl font-bold text-white">Cover Letter</h2>
+          </div>
+          <div className="border-b border-dark-700 mb-6"></div>
+          
+          {editMode ? (
+            <div className="fade-in">
+              <textarea
+                value={editedCoverLetter}
+                onChange={handleCoverLetterChange}
+                rows={20}
+                className="input-primary w-full resize-none font-normal leading-relaxed"
+                placeholder="Edit your cover letter..."
+              />
+            </div>
+          ) : (
+            <div className="fade-in">
+              <div className="bg-dark-800 border border-dark-600 rounded-lg p-6 min-h-[400px] whitespace-pre-wrap font-normal leading-relaxed text-gray-300">
+                {editedCoverLetter || coverLetter}
+              </div>
+            </div>
+          )}
+        </div>
 
-      {/* Tips and Recommendations */}
-      <Fade in={true} timeout={1000}>
-        <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
-          <Typography variant="h6" gutterBottom>
-            Cover Letter Tips
-          </Typography>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-              <Grow in={true} timeout={1200}>
-                <Card variant="outlined">
-                  <CardContent>
-                    <Typography variant="subtitle1" gutterBottom>
-                      Personalization
-                    </Typography>
-                    <Typography variant="body2">
-                      Consider adding more personal touches to make the cover letter uniquely yours. 
-                      Mention specific achievements that align with the job requirements.
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grow>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Grow in={true} timeout={1400}>
-                <Card variant="outlined">
-                  <CardContent>
-                    <Typography variant="subtitle1" gutterBottom>
-                      Addressing Gaps
-                    </Typography>
-                    <Typography variant="body2">
-                      If there are skill gaps identified in your match results, consider addressing how 
-                      you're working to develop those skills or how your existing skills can compensate.
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grow>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Grow in={true} timeout={1600}>
-                <Card variant="outlined">
-                  <CardContent>
-                    <Typography variant="subtitle1" gutterBottom>
-                      Company Research
-                    </Typography>
-                    <Typography variant="body2">
-                      Enhance your cover letter by researching the company's values, culture, and recent 
-                      achievements. Reference these to show your genuine interest in the organization.
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grow>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Grow in={true} timeout={1800}>
-                <Card variant="outlined">
-                  <CardContent>
-                    <Typography variant="subtitle1" gutterBottom>
-                      Proofreading
-                    </Typography>
-                    <Typography variant="body2">
-                      Always proofread your cover letter for grammar and spelling errors. Consider having 
-                      someone else review it as well for feedback on tone and content.
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grow>
-            </Grid>
-          </Grid>
-        </Paper>
-      </Fade>
+        {/* Tips and Recommendations */}
+        <div className="card p-6 mb-8 fade-in">
+          <div className="flex items-center mb-6">
+            <Lightbulb className="w-6 h-6 text-neon-400 mr-3" />
+            <h2 className="text-2xl font-bold text-white">Cover Letter Tips</h2>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="bg-dark-800 border border-dark-600 rounded-lg p-6 slide-in">
+              <div className="flex items-center mb-3">
+                <Target className="w-5 h-5 text-neon-400 mr-2" />
+                <h3 className="text-lg font-semibold text-white">Personalization</h3>
+              </div>
+              <p className="text-gray-400 leading-relaxed">
+                Consider adding more personal touches to make the cover letter uniquely yours. 
+                Mention specific achievements that align with the job requirements.
+              </p>
+            </div>
+            
+            <div className="bg-dark-800 border border-dark-600 rounded-lg p-6 slide-in" style={{ animationDelay: '0.1s' }}>
+              <div className="flex items-center mb-3">
+                <AlertCircle className="w-5 h-5 text-electric-400 mr-2" />
+                <h3 className="text-lg font-semibold text-white">Addressing Gaps</h3>
+              </div>
+              <p className="text-gray-400 leading-relaxed">
+                If there are skill gaps identified in your match results, consider addressing how 
+                you're working to develop those skills or how your existing skills can compensate.
+              </p>
+            </div>
+            
+            <div className="bg-dark-800 border border-dark-600 rounded-lg p-6 slide-in" style={{ animationDelay: '0.2s' }}>
+              <div className="flex items-center mb-3">
+                <Search className="w-5 h-5 text-neon-400 mr-2" />
+                <h3 className="text-lg font-semibold text-white">Company Research</h3>
+              </div>
+              <p className="text-gray-400 leading-relaxed">
+                Enhance your cover letter by researching the company's values, culture, and recent 
+                achievements. Reference these to show your genuine interest in the organization.
+              </p>
+            </div>
+            
+            <div className="bg-dark-800 border border-dark-600 rounded-lg p-6 slide-in" style={{ animationDelay: '0.3s' }}>
+              <div className="flex items-center mb-3">
+                <Check className="w-5 h-5 text-electric-400 mr-2" />
+                <h3 className="text-lg font-semibold text-white">Proofreading</h3>
+              </div>
+              <p className="text-gray-400 leading-relaxed">
+                Always proofread your cover letter for grammar and spelling errors. Consider having 
+                someone else review it as well for feedback on tone and content.
+              </p>
+            </div>
+          </div>
+        </div>
 
-      {/* Next Steps */}
-      <Box sx={{ mt: 4, textAlign: 'center' }}>
-        <Fade in={true} timeout={2000}>
-          <div>
-            <Button 
-              variant="contained" 
-              color="primary" 
-              size="large"
+        {/* Next Steps */}
+        <div className="text-center fade-in" style={{ animationDelay: '0.4s' }}>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button 
               onClick={() => navigate('/feedback')}
-              sx={{ mr: 2 }}
+              className="btn-primary flex items-center justify-center"
             >
               Get Resume Feedback
-            </Button>
-            <Button 
-              variant="outlined" 
-              color="primary" 
-              size="large"
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </button>
+            <button 
               onClick={() => navigate('/dashboard')}
+              className="btn-secondary flex items-center justify-center"
             >
               Go to Dashboard
-            </Button>
+            </button>
           </div>
-        </Fade>
-      </Box>
+        </div>
 
-      {/* Copy Success Notification */}
-      <Snackbar
-        open={copySuccess}
-        autoHideDuration={3000}
-        onClose={handleCloseSnackbar}
-        message="Cover letter copied to clipboard!"
-      />
-    </Container>
+        {/* Copy Success Notification */}
+        {copySuccess && (
+          <div className="fixed bottom-4 right-4 bg-neon-900 border border-neon-700 text-neon-300 px-6 py-3 rounded-lg shadow-glow fade-in">
+            <div className="flex items-center">
+              <Check className="w-5 h-5 mr-2 text-neon-400" />
+              Cover letter copied to clipboard!
+              <button 
+                onClick={handleCloseSnackbar}
+                className="ml-4 text-neon-400 hover:text-neon-300"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 

@@ -1,35 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  AppBar, 
-  Toolbar, 
-  Typography, 
-  Button, 
-  IconButton, 
-  Box, 
-  Drawer, 
-  List, 
-  ListItem, 
-  ListItemIcon, 
-  ListItemText, 
-  Divider,
-  useMediaQuery,
-  useTheme,
-  Avatar,
-  Container
-} from '@mui/material';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import MenuIcon from '@mui/icons-material/Menu';
-import HomeIcon from '@mui/icons-material/Home';
-import DescriptionIcon from '@mui/icons-material/Description';
-import WorkIcon from '@mui/icons-material/Work';
-import CompareIcon from '@mui/icons-material/Compare';
-import EmailIcon from '@mui/icons-material/Email';
-import FeedbackIcon from '@mui/icons-material/Feedback';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import LoginIcon from '@mui/icons-material/Login';
-import PersonAddIcon from '@mui/icons-material/PersonAdd';
-import LogoutIcon from '@mui/icons-material/Logout';
-import AnalyticsIcon from '@mui/icons-material/Analytics';
+import { 
+  Menu, 
+  X, 
+  Home, 
+  FileText, 
+  Briefcase, 
+  BarChart3, 
+  Target, 
+  Mail, 
+  MessageSquare, 
+  BarChart2,
+  LogIn, 
+  UserPlus, 
+  LogOut,
+  Zap
+} from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../../features/auth/authSlice';
 import { useAuthState } from 'react-firebase-hooks/auth';
@@ -37,9 +23,7 @@ import { auth } from '../../firebase/firebaseConfig';
 import sessionManager from '../../utils/sessionManager';
 
 const Header = () => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -55,10 +39,6 @@ const Header = () => {
   const sessionData = sessionManager.getSessionData();
   const isGuestSession = sessionData?.isGuest === true;
   
-  // For user display info, prefer Firebase user data (unused for now but may be needed for future features)
-  // const displayName = firebaseUser?.displayName || reduxUser?.displayName || 'User';
-  // const photoURL = firebaseUser?.photoURL || reduxUser?.photoURL;
-  
   // Log auth state for debugging
   useEffect(() => {
     console.log('Auth State in Header:', { 
@@ -72,13 +52,13 @@ const Header = () => {
   
   // Core app features available to all users (guest and authenticated)
   const navItems = [
-    { name: 'Home', path: '/', icon: <HomeIcon /> },
-    { name: 'Resume Parser', path: '/resume', icon: <DescriptionIcon /> },
-    { name: 'Job Matcher', path: '/job-match', icon: <WorkIcon /> },
-    { name: 'Match Results', path: '/match-results', icon: <CompareIcon /> },
-    { name: 'Keyword Insights', path: '/keyword-insights', icon: <AnalyticsIcon /> },
-    { name: 'Cover Letter', path: '/cover-letter', icon: <EmailIcon /> },
-    { name: 'Feedback', path: '/feedback', icon: <FeedbackIcon /> },
+    { name: 'Home', path: '/', icon: Home },
+    { name: 'Resume Parser', path: '/resume', icon: FileText },
+    { name: 'Job Matcher', path: '/job-match', icon: Briefcase },
+    { name: 'Match Results', path: '/match-results', icon: Target },
+    { name: 'Keyword Insights', path: '/keyword-insights', icon: BarChart3 },
+    { name: 'Cover Letter', path: '/cover-letter', icon: Mail },
+    { name: 'Feedback', path: '/feedback', icon: MessageSquare },
   ];
   
   const handleLogout = () => {
@@ -86,25 +66,19 @@ const Header = () => {
     sessionManager.clearSession();
     dispatch(logout());
     navigate('/');
-    if (isMobile) {
-      setDrawerOpen(false);
-    }
+    setIsMobileMenuOpen(false);
   };
   
   // Authentication-specific items
   const authItems = isLoggedIn 
     ? [
-        { name: 'Score Board', path: '/dashboard', icon: <DashboardIcon /> },
-        { name: 'Logout', path: '#', icon: <LogoutIcon />, onClick: handleLogout },
+        { name: 'Score Board', path: '/dashboard', icon: BarChart2 },
+        { name: 'Logout', path: '#', icon: LogOut, onClick: handleLogout },
       ]
     : [
-        { name: 'Login', path: '/login', icon: <LoginIcon /> },
-        { name: 'Register', path: '/register', icon: <PersonAddIcon /> },
+        { name: 'Login', path: '/login', icon: LogIn },
+        { name: 'Register', path: '/register', icon: UserPlus },
       ];
-  
-  const handleDrawerToggle = () => {
-    setDrawerOpen(!drawerOpen);
-  };
   
   const handleNavigation = (path, onClick) => {
     if (onClick) {
@@ -112,283 +86,180 @@ const Header = () => {
     } else if (path) {
       navigate(path);
     }
-    
-    if (isMobile) {
-      setDrawerOpen(false);
-    }
+    setIsMobileMenuOpen(false);
   };
-  
-  const drawer = (
-    <Box sx={{ width: 250 }} role="presentation">
-      <Box sx={{ 
-        p: 3,
-        display: 'flex',
-        alignItems: 'center',
-        background: 'linear-gradient(45deg, #303f9f 30%, #1976d2 90%)',
-        color: 'white'
-      }}>
-        <Avatar 
-          sx={{ 
-            bgcolor: 'white', 
-            color: theme.palette.primary.main,
-            mr: 2,
-            width: 40,
-            height: 40,
-            fontWeight: 'bold'
-          }}
-        >
-          AI
-        </Avatar>
-        <Typography variant="h6" component="div">
-          Resume Optimizer
-        </Typography>
-      </Box>
-      <Divider />
-      <List>
-        {navItems.map((item) => (
-          <ListItem 
-            button 
-            key={item.name} 
-            onClick={() => handleNavigation(item.path)}
-            selected={location.pathname === item.path}
-            sx={{
-              my: 0.5,
-              mx: 1,
-              borderRadius: 1,
-              '&.Mui-selected': {
-                backgroundColor: theme.palette.primary.light,
-                color: 'white',
-                '& .MuiListItemIcon-root': {
-                  color: 'white',
-                }
-              },
-              '&:hover': {
-                backgroundColor: theme.palette.action.hover,
-              }
-            }}
-          >
-            <ListItemIcon sx={{ minWidth: 40 }}>{item.icon}</ListItemIcon>
-            <ListItemText primary={item.name} />
-          </ListItem>
-        ))}
-      </List>
-      <Divider />
-      
-      {/* Guest user encouragement */}
-      {isGuestSession && (
-        <Box sx={{ p: 2, mx: 1, my: 1, borderRadius: 1, backgroundColor: theme.palette.info.light, color: 'white' }}>
-          <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>
-            👋 Guest Mode Active
-          </Typography>
-          <Typography variant="caption" sx={{ display: 'block', mb: 1 }}>
-            Sign up to save your work and access your Score Board!
-          </Typography>
-          <Button 
-            size="small" 
-            variant="contained" 
-            color="secondary" 
-            fullWidth
-            onClick={() => handleNavigation('/register')}
-          >
-            Create Account
-          </Button>
-        </Box>
-      )}
-      
-      <List>
-        {authItems.map((item) => (
-          <ListItem 
-            button 
-            key={item.name} 
-            onClick={() => handleNavigation(item.path, item.onClick)}
-            selected={location.pathname === item.path}
-            sx={{
-              my: 0.5,
-              mx: 1,
-              borderRadius: 1,
-              '&.Mui-selected': {
-                backgroundColor: theme.palette.secondary.main,
-                color: 'white',
-                '& .MuiListItemIcon-root': {
-                  color: 'white',
-                }
-              },
-              '&:hover': {
-                backgroundColor: theme.palette.action.hover,
-              }
-            }}
-          >
-            <ListItemIcon sx={{ minWidth: 40 }}>{item.icon}</ListItemIcon>
-            <ListItemText primary={item.name} />
-          </ListItem>
-        ))}
-      </List>
-    </Box>
-  );
-  
+
+  const isActive = (path) => location.pathname === path;
+
   return (
     <>
-      <AppBar 
-        position="fixed" 
-        sx={{ 
-          background: 'linear-gradient(90deg, #303f9f 0%, #1976d2 100%)',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
-        }}
-      >
-        <Container maxWidth="xl">
-          <Toolbar sx={{ px: { xs: 1, sm: 2 }, py: 1 }}>
-            {isMobile ? (
-              <>
-                <IconButton
-                  color="inherit"
-                  aria-label="open drawer"
-                  edge="start"
-                  onClick={handleDrawerToggle}
-                  sx={{ mr: 2 }}
-                >
-                  <MenuIcon />
-                </IconButton>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <Avatar 
-                    sx={{ 
-                      bgcolor: 'white', 
-                      color: theme.palette.primary.main,
-                      mr: 1.5,
-                      width: 32,
-                      height: 32,
-                      fontWeight: 'bold'
-                    }}
+      {/* Header */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-dark-950 to-dark-900 border-b border-dark-800 backdrop-blur-sm">
+        <div className="content-container">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo */}
+            <Link 
+              to="/" 
+              className="flex items-center space-x-3 hover:opacity-90 transition-opacity duration-200 group"
+            >
+              <div className="relative">
+                <div className="w-10 h-10 bg-gradient-neon rounded-lg flex items-center justify-center font-bold text-dark-950 shadow-glow-sm group-hover:shadow-glow transition-all duration-300">
+                  <Zap className="w-6 h-6" />
+                </div>
+              </div>
+              <span className="text-xl font-bold text-gradient hidden sm:block">
+                Resume Optimizer
+              </span>
+            </Link>
+
+            {/* Desktop Navigation */}
+            <nav className="hidden lg:flex items-center space-x-1">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.name}
+                    to={item.path}
+                    className={`nav-link flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 relative group ${
+                      isActive(item.path) ? 'nav-link-active bg-dark-800' : 'hover:bg-dark-800'
+                    }`}
                   >
-                    AI
-                  </Avatar>
-                  <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                    Resume Optimizer
-                  </Typography>
-                </Box>
-              </>
-            ) : (
-              <>
-                <Box 
-                  component={Link} 
-                  to="/" 
-                  sx={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    textDecoration: 'none', 
-                    color: 'inherit',
-                    mr: 4,
-                    '&:hover': {
-                      opacity: 0.9,
-                    }
-                  }}
-                >
-                  <Avatar 
-                    sx={{ 
-                      bgcolor: 'white', 
-                      color: theme.palette.primary.main,
-                      mr: 1.5,
-                      width: 36,
-                      height: 36,
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    AI
-                  </Avatar>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                    Resume Optimizer
-                  </Typography>
-                </Box>
-                <Box sx={{ flexGrow: 1, display: 'flex' }}>
-                  {navItems.map((item) => (
-                    <Button 
-                      key={item.name}
-                      color="inherit"
-                      component={Link}
-                      to={item.path}
-                      sx={{ 
-                        mx: 0.5,
-                        px: 1.5,
-                        py: 1,
-                        borderBottom: location.pathname === item.path ? '3px solid white' : '3px solid transparent',
-                        borderRadius: '4px 4px 0 0',
-                        transition: 'all 0.2s ease-in-out',
-                        '&:hover': {
-                          backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                          transform: 'translateY(-2px)',
-                        }
-                      }}
-                      startIcon={item.icon}
-                    >
-                      {item.name}
-                    </Button>
-                  ))}
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  {/* Guest mode indicator for desktop */}
-                  {isGuestSession && (
-                    <Typography 
-                      variant="body2" 
-                      sx={{ 
-                        mr: 2, 
-                        px: 1.5, 
-                        py: 0.5, 
-                        borderRadius: 4, 
-                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                        fontSize: '0.75rem'
-                      }}
-                    >
-                      👋 Guest Mode
-                    </Typography>
-                  )}
+                    <Icon className="w-4 h-4" />
+                    <span className="font-medium">{item.name}</span>
+                    {isActive(item.path) && (
+                      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1/2 h-0.5 bg-neon-500"></div>
+                    )}
+                  </Link>
+                );
+              })}
+            </nav>
+
+            {/* Auth Section & Guest Indicator */}
+            <div className="hidden lg:flex items-center space-x-4">
+              {/* Guest mode indicator */}
+              {isGuestSession && (
+                <div className="flex items-center space-x-2 px-3 py-1 bg-dark-800 border border-dark-600 rounded-full">
+                  <span className="text-sm text-gray-400">👋 Guest Mode</span>
+                </div>
+              )}
+              
+              {/* Auth buttons */}
+              <div className="flex items-center space-x-2">
+                {authItems.map((item) => {
+                  const Icon = item.icon;
+                  const isRegister = item.name === 'Register';
                   
-                  {authItems.map((item) => (
-                    <Button 
+                  return (
+                    <button
                       key={item.name}
-                      color="inherit"
-                      onClick={item.onClick}
-                      component={item.onClick ? undefined : Link}
-                      to={item.onClick ? undefined : item.path}
-                      variant={item.name === 'Register' ? 'contained' : 'outlined'}
-                      sx={{ 
-                        ml: 1,
-                        px: 2,
-                        borderRadius: 8,
-                        borderColor: 'white',
-                        backgroundColor: item.name === 'Register' ? 'white' : 'transparent',
-                        color: item.name === 'Register' ? theme.palette.primary.main : 'white',
-                        '&:hover': {
-                          backgroundColor: item.name === 'Register' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.15)',
-                          borderColor: 'white',
-                        }
-                      }}
-                      startIcon={item.icon}
+                      onClick={() => handleNavigation(item.path, item.onClick)}
+                      className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                        isRegister 
+                          ? 'btn-primary' 
+                          : 'btn-secondary'
+                      }`}
                     >
-                      {item.name}
-                    </Button>
-                  ))}
-                </Box>
-              </>
-            )}
-          </Toolbar>
-        </Container>
-      </AppBar>
-      <Toolbar sx={{ mb: 1 }} /> {/* Empty toolbar to offset content below the fixed AppBar */}
-      
-      {/* Mobile drawer */}
-      <Drawer
-        variant="temporary"
-        open={drawerOpen}
-        onClose={handleDrawerToggle}
-        ModalProps={{
-          keepMounted: true, // Better mobile performance
-        }}
-        sx={{
-          display: { xs: 'block', md: 'none' },
-          '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 250 },
-        }}
-      >
-        {drawer}
-      </Drawer>
+                      <Icon className="w-4 h-4" />
+                      <span>{item.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Mobile menu button */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="lg:hidden p-2 rounded-lg hover:bg-dark-800 transition-colors duration-200"
+            >
+              {isMobileMenuOpen ? (
+                <X className="w-6 h-6 text-gray-300" />
+              ) : (
+                <Menu className="w-6 h-6 text-gray-300" />
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Navigation */}
+        {isMobileMenuOpen && (
+          <div className="lg:hidden bg-dark-900 border-t border-dark-800">
+            <div className="content-container py-4">
+              {/* Mobile Logo Header */}
+              <div className="flex items-center space-x-3 pb-4 mb-4 border-b border-dark-800">
+                <div className="w-8 h-8 bg-gradient-neon rounded-lg flex items-center justify-center font-bold text-dark-950">
+                  <Zap className="w-5 h-5" />
+                </div>
+                <span className="text-lg font-bold text-gradient">Resume Optimizer</span>
+              </div>
+
+              {/* Mobile Navigation Items */}
+              <div className="space-y-1">
+                {navItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.name}
+                      to={item.path}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+                        isActive(item.path) 
+                          ? 'bg-dark-800 border-l-4 border-neon-500 text-neon-400' 
+                          : 'hover:bg-dark-800 text-gray-300'
+                      }`}
+                    >
+                      <Icon className="w-5 h-5" />
+                      <span className="font-medium">{item.name}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+
+              {/* Guest mode card for mobile */}
+              {isGuestSession && (
+                <div className="mt-4 p-4 bg-dark-800 border border-dark-600 rounded-lg">
+                  <h3 className="font-semibold text-neon-400 mb-2 flex items-center">
+                    👋 Guest Mode Active
+                  </h3>
+                  <p className="text-sm text-gray-400 mb-3">
+                    Sign up to save your work and access your Score Board!
+                  </p>
+                  <button 
+                    onClick={() => handleNavigation('/register')}
+                    className="btn-primary w-full"
+                  >
+                    Create Account
+                  </button>
+                </div>
+              )}
+
+              {/* Mobile Auth Items */}
+              <div className="mt-4 pt-4 border-t border-dark-800 space-y-2">
+                {authItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={item.name}
+                      onClick={() => handleNavigation(item.path, item.onClick)}
+                      className={`flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left transition-all duration-200 ${
+                        item.name === 'Register'
+                          ? 'btn-primary justify-center'
+                          : 'hover:bg-dark-800 text-gray-300'
+                      }`}
+                    >
+                      <Icon className="w-5 h-5" />
+                      <span className="font-medium">{item.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+      </header>
+
+      {/* Spacer to push content below fixed header */}
+      <div className="h-16"></div>
     </>
   );
 };

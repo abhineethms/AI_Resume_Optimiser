@@ -5,63 +5,48 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '../firebase/firebaseConfig';
 import { fetchUserDetails, logout } from '../features/auth/authSlice';
 import axiosWithAuth from '../utils/axiosWithAuth';
-
-// Material UI imports
 import {
-  Container,
-  Typography,
-  Box,
-  Grid,
-  Paper,
-  Button,
-  Avatar,
-  Divider,
-  CircularProgress,
-  Card,
-  CardContent,
-  CardActions,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemIcon
-} from '@mui/material';
-import {
-  Description as ResumeIcon,
-  Work as JobIcon,
-  Compare as MatchIcon,
-  Email as CoverLetterIcon,
-  Person as PersonIcon
-} from '@mui/icons-material';
+  FileText,
+  Briefcase,
+  Target,
+  Mail,
+  User,
+  LogOut,
+  BarChart3,
+  Activity,
+  Calendar,
+  TrendingUp
+} from 'lucide-react';
 
 // Define the workflow steps for the app process
 const workflowSteps = [
   {
     title: 'Parse Resume',
-    icon: <ResumeIcon />,
+    icon: FileText,
     description: 'Upload your resume to extract key information',
     path: '/resume',
-    color: '#3f51b5'
+    gradient: 'from-neon-500 to-neon-600'
   },
   {
     title: 'Match Jobs',
-    icon: <JobIcon />,
+    icon: Briefcase,
     description: 'Upload job descriptions to match with your resume',
     path: '/job-match',
-    color: '#2196f3'
+    gradient: 'from-electric-500 to-electric-600'
   },
   {
     title: 'View Results',
-    icon: <MatchIcon />,
+    icon: Target,
     description: 'See how well your resume matches job descriptions',
     path: '/match-results',
-    color: '#00bcd4'
+    gradient: 'from-neon-400 to-electric-500'
   },
   {
     title: 'Generate Cover Letter',
-    icon: <CoverLetterIcon />,
+    icon: Mail,
     description: 'Create tailored cover letters for each job',
     path: '/cover-letter',
-    color: '#009688'
+    gradient: 'from-electric-400 to-neon-500'
   }
 ];
 
@@ -125,9 +110,9 @@ const DashboardPage = () => {
   // Show loading state while checking auth
   if (loading || isLoading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
-        <CircularProgress />
-      </Box>
+      <div className="flex justify-center items-center h-screen">
+        <div className="loading-spinner w-16 h-16"></div>
+      </div>
     );
   }
   
@@ -138,220 +123,191 @@ const DashboardPage = () => {
   }
   
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
-      <Grid container spacing={4}>
-        {/* User Profile Section */}
-        <Grid item xs={12} md={4}>
-          <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 2 }}>
-              <Avatar
-                src={user.photoURL || ''}
-                alt={user.displayName || 'User'}
-                sx={{ width: 100, height: 100, mb: 2 }}
-              >
-                {!user.photoURL && <PersonIcon sx={{ fontSize: 60 }} />}
-              </Avatar>
-              
-              <Typography variant="h5" gutterBottom>
-                {user.displayName || 'Welcome!'}
-              </Typography>
-              
-              <Typography variant="body1" color="text.secondary" gutterBottom>
-                {user.email}
-              </Typography>
-              
-              <Button 
-                variant="outlined" 
-                component={Link} 
-                to="/profile" 
-                sx={{ mt: 1 }}
-              >
-                Edit Profile
-              </Button>
-            </Box>
-            
-            <Divider sx={{ my: 2 }} />
-            
-            {/* User Stats */}
-            <Typography variant="h6" sx={{ mb: 2 }}>
-              📊 Score Board
-            </Typography>
-            
-            <List dense>
-              <ListItem sx={{ px: 0 }}>
-                <ListItemIcon>
-                  <ResumeIcon color="primary" />
-                </ListItemIcon>
-                <ListItemText 
-                  primary={
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant="body2">Resumes Parsed</Typography>
-                      <Typography variant="h6" color="primary" sx={{ fontWeight: 'bold' }}>
-                        {dashboardData.stats.resumesUploaded}
-                      </Typography>
-                    </Box>
-                  }
-                />
-              </ListItem>
-              
-              <ListItem sx={{ px: 0 }}>
-                <ListItemIcon>
-                  <JobIcon color="secondary" />
-                </ListItemIcon>
-                <ListItemText 
-                  primary={
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant="body2">Jobs Analyzed</Typography>
-                      <Typography variant="h6" color="secondary" sx={{ fontWeight: 'bold' }}>
-                        {dashboardData.stats.jobsAnalyzed}
-                      </Typography>
-                    </Box>
-                  }
-                />
-              </ListItem>
-              
-              <ListItem sx={{ px: 0 }}>
-                <ListItemIcon>
-                  <MatchIcon color="success" />
-                </ListItemIcon>
-                <ListItemText 
-                  primary={
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant="body2">Matches Created</Typography>
-                      <Typography variant="h6" color="success.main" sx={{ fontWeight: 'bold' }}>
-                        {dashboardData.stats.matchesCreated || 0}
-                      </Typography>
-                    </Box>
-                  }
-                />
-              </ListItem>
-              
-              <ListItem sx={{ px: 0 }}>
-                <ListItemIcon>
-                  <CoverLetterIcon color="info" />
-                </ListItemIcon>
-                <ListItemText 
-                  primary={
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant="body2">Cover Letters</Typography>
-                      <Typography variant="h6" color="info.main" sx={{ fontWeight: 'bold' }}>
-                        {dashboardData.stats.coverLettersGenerated}
-                      </Typography>
-                    </Box>
-                  }
-                />
-              </ListItem>
-            </List>
-            
-            <Divider sx={{ my: 2 }} />
-            
-            <Button 
-              fullWidth 
-              variant="contained" 
-              color="error" 
-              onClick={handleLogout} 
-              sx={{ mt: 2 }}
-            >
-              Logout
-            </Button>
-          </Paper>
-        </Grid>
-        
-        {/* Main Content Section */}
-        <Grid item xs={12} md={8}>
-          {/* Workflow Process Cards */}
-          <Typography variant="h4" gutterBottom sx={{ mb: 3 }}>
-            Resume Optimization Process
-          </Typography>
-          
-          <Typography variant="body1" color="text.secondary" paragraph sx={{ mb: 4 }}>
-            Optimize your job applications by following our 4-step process. Start by parsing your resume, then match it against job descriptions to get insights and generate tailored cover letters.
-          </Typography>
-          
-          <Grid container spacing={3}>
-            {workflowSteps.map((step, index) => (
-              <Grid item xs={12} sm={6} key={index}>
-                <Card 
-                  elevation={4}
-                  sx={{ 
-                    height: '100%',
-                    display: 'flex', 
-                    flexDirection: 'column',
-                    transition: 'transform 0.2s',
-                    '&:hover': { transform: 'translateY(-5px)' }
-                  }}
+    <div className="page-container">
+      <div className="content-container">
+        <div className="grid lg:grid-cols-12 gap-8">
+          {/* User Profile Section */}
+          <div className="lg:col-span-4">
+            <div className="card p-6 sticky top-24">
+              {/* User Profile */}
+              <div className="flex flex-col items-center mb-6">
+                <div className="relative mb-4">
+                  {user.photoURL ? (
+                    <img
+                      src={user.photoURL}
+                      alt={user.displayName || 'User'}
+                      className="w-24 h-24 rounded-full border-2 border-neon-500 shadow-glow"
+                    />
+                  ) : (
+                    <div className="w-24 h-24 rounded-full bg-dark-700 border-2 border-neon-500 flex items-center justify-center shadow-glow">
+                      <User className="w-12 h-12 text-neon-400" />
+                    </div>
+                  )}
+                  <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-neon-500 rounded-full border-2 border-dark-950 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-dark-950 rounded-full"></div>
+                  </div>
+                </div>
+                
+                <h2 className="text-2xl font-bold text-white mb-2">
+                  {user.displayName || 'Welcome!'}
+                </h2>
+                
+                <p className="text-gray-400 mb-4 text-center break-all">
+                  {user.email}
+                </p>
+                
+                <Link 
+                  to="/profile"
+                  className="btn-secondary text-sm"
                 >
-                  <Box
-                    sx={{
-                      p: 2,
-                      backgroundColor: step.color,
-                      color: 'white',
-                      display: 'flex',
-                      alignItems: 'center'
-                    }}
-                  >
-                    {React.cloneElement(step.icon, { sx: { mr: 1 } })}
-                    <Typography variant="h6">
-                      Step {index + 1}: {step.title}
-                    </Typography>
-                  </Box>
-                  
-                  <CardContent sx={{ flexGrow: 1 }}>
-                    <Typography variant="body1">
-                      {step.description}
-                    </Typography>
-                  </CardContent>
-                  
-                  <CardActions>
-                    <Button 
-                      size="large" 
-                      fullWidth 
-                      variant="contained" 
-                      component={Link}
-                      to={step.path}
-                      sx={{ 
-                        backgroundColor: step.color,
-                        '&:hover': {
-                          backgroundColor: step.color,
-                          filter: 'brightness(90%)'
-                        }
-                      }}
-                    >
-                      {index === 0 ? 'Start Here' : 'Go to Step'}
-                    </Button>
-                  </CardActions>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-          
-          {/* Recent Activities Section */}
-          {dashboardData.recentActivities.length > 0 && (
-            <>
-              <Typography variant="h5" sx={{ mt: 6, mb: 2 }}>
-                Recent Activities
-              </Typography>
+                  Edit Profile
+                </Link>
+              </div>
               
-              <Paper elevation={2} sx={{ p: 2, borderRadius: 2 }}>
-                <List>
+              <div className="border-t border-dark-700 pt-6 mb-6">
+                <div className="flex items-center mb-4">
+                  <BarChart3 className="w-5 h-5 text-neon-400 mr-2" />
+                  <h3 className="text-lg font-semibold text-white">Score Board</h3>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-3 bg-dark-800 rounded-lg">
+                    <div className="flex items-center">
+                      <FileText className="w-5 h-5 text-neon-400 mr-3" />
+                      <span className="text-gray-300">Resumes Parsed</span>
+                    </div>
+                    <span className="text-2xl font-bold text-neon-400">
+                      {dashboardData.stats.resumesUploaded}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-3 bg-dark-800 rounded-lg">
+                    <div className="flex items-center">
+                      <Briefcase className="w-5 h-5 text-electric-400 mr-3" />
+                      <span className="text-gray-300">Jobs Analyzed</span>
+                    </div>
+                    <span className="text-2xl font-bold text-electric-400">
+                      {dashboardData.stats.jobsAnalyzed}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-3 bg-dark-800 rounded-lg">
+                    <div className="flex items-center">
+                      <Target className="w-5 h-5 text-neon-400 mr-3" />
+                      <span className="text-gray-300">Matches Created</span>
+                    </div>
+                    <span className="text-2xl font-bold text-neon-400">
+                      {dashboardData.stats.matchesCreated || 0}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-3 bg-dark-800 rounded-lg">
+                    <div className="flex items-center">
+                      <Mail className="w-5 h-5 text-electric-400 mr-3" />
+                      <span className="text-gray-300">Cover Letters</span>
+                    </div>
+                    <span className="text-2xl font-bold text-electric-400">
+                      {dashboardData.stats.coverLettersGenerated}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="border-t border-dark-700 pt-6">
+                <button 
+                  onClick={handleLogout}
+                  className="w-full flex items-center justify-center px-4 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors duration-200"
+                >
+                  <LogOut className="w-5 h-5 mr-2" />
+                  Logout
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          {/* Main Content Section */}
+          <div className="lg:col-span-8">
+            {/* Header */}
+            <div className="mb-8">
+              <h1 className="text-4xl font-bold text-white mb-4">
+                Resume <span className="text-gradient">Optimization Process</span>
+              </h1>
+              <p className="text-xl text-gray-400 leading-relaxed">
+                Optimize your job applications by following our 4-step process. Start by parsing your resume, 
+                then match it against job descriptions to get insights and generate tailored cover letters.
+              </p>
+            </div>
+            
+            {/* Workflow Process Cards */}
+            <div className="grid sm:grid-cols-2 gap-6 mb-8">
+              {workflowSteps.map((step, index) => {
+                const IconComponent = step.icon;
+                return (
+                  <div 
+                    key={index}
+                    className="card card-hover overflow-hidden group transition-all duration-300 hover:scale-105"
+                  >
+                    {/* Header with gradient */}
+                    <div className={`bg-gradient-to-r ${step.gradient} p-4 text-dark-950`}>
+                      <div className="flex items-center">
+                        <IconComponent className="w-6 h-6 mr-3" />
+                        <h3 className="text-lg font-bold">
+                          Step {index + 1}: {step.title}
+                        </h3>
+                      </div>
+                    </div>
+                    
+                    {/* Content */}
+                    <div className="p-6 flex-1">
+                      <p className="text-gray-400 mb-6 leading-relaxed">
+                        {step.description}
+                      </p>
+                      
+                      <Link 
+                        to={step.path}
+                        className={`inline-flex items-center justify-center w-full px-6 py-3 bg-gradient-to-r ${step.gradient} text-dark-950 font-medium rounded-lg hover:shadow-glow transition-all duration-200 group-hover:scale-105`}
+                      >
+                        {index === 0 ? 'Start Here' : 'Go to Step'}
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            
+            {/* Recent Activities Section */}
+            {dashboardData.recentActivities.length > 0 && (
+              <div className="card p-6">
+                <div className="flex items-center mb-6">
+                  <Activity className="w-6 h-6 text-neon-400 mr-3" />
+                  <h2 className="text-2xl font-bold text-white">Recent Activities</h2>
+                </div>
+                
+                <div className="space-y-4">
                   {dashboardData.recentActivities.map((activity, index) => (
-                    <React.Fragment key={index}>
-                      <ListItem>
-                        <ListItemText
-                          primary={activity.description}
-                          secondary={new Date(activity.timestamp).toLocaleString()}
-                        />
-                      </ListItem>
-                      {index < dashboardData.recentActivities.length - 1 && <Divider />}
-                    </React.Fragment>
+                    <div 
+                      key={index}
+                      className={`p-4 bg-dark-800 rounded-lg ${index !== dashboardData.recentActivities.length - 1 ? 'border-b border-dark-700' : ''}`}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <p className="text-gray-300 mb-1">{activity.description}</p>
+                          <div className="flex items-center text-gray-500 text-sm">
+                            <Calendar className="w-4 h-4 mr-1" />
+                            {new Date(activity.timestamp).toLocaleString()}
+                          </div>
+                        </div>
+                        <TrendingUp className="w-5 h-5 text-neon-400 ml-4" />
+                      </div>
+                    </div>
                   ))}
-                </List>
-              </Paper>
-            </>
-          )}
-        </Grid>
-      </Grid>
-    </Container>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

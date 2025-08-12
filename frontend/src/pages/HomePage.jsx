@@ -1,768 +1,369 @@
 import React from 'react';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import {
-  Box,
-  Button,
-  Container,
-  Grid,
-  Typography,
-  Card,
-  CardContent,
-  Stack,
-  Paper,
-  useTheme,
-} from '@mui/material';
-import {
-  Description as ResumeIcon,
-  Work as JobIcon,
-  Email as CoverLetterIcon,
-  Feedback as FeedbackIcon,
-} from '@mui/icons-material';
+  FileText,
+  Briefcase,
+  Mail,
+  MessageSquare,
+  Check,
+  Target,
+  Zap,
+  ChevronRight,
+  Star,
+  TrendingUp,
+  Shield,
+  Brain
+} from 'lucide-react';
 
 const featureCards = [
   {
     title: 'Resume Parser',
     description: 'Upload your resume and our AI will extract key information to optimize your job applications.',
-    icon: <ResumeIcon sx={{ fontSize: 60 }} />,
+    icon: FileText,
     link: '/resume',
-    color: '#3f51b5',
+    gradient: 'from-neon-500 to-neon-600',
   },
   {
     title: 'Job Matcher',
     description: 'Match your resume with job descriptions to see how well you fit and what skills you need to highlight.',
-    icon: <JobIcon sx={{ fontSize: 60 }} />,
+    icon: Briefcase,
     link: '/job-match',
-    color: '#f50057',
+    gradient: 'from-electric-500 to-electric-600',
   },
   {
     title: 'Cover Letter Generator',
     description: 'Generate tailored cover letters that highlight your relevant skills and experience for each job.',
-    icon: <CoverLetterIcon sx={{ fontSize: 60 }} />,
+    icon: Mail,
     link: '/cover-letter',
-    color: '#00bcd4',
+    gradient: 'from-purple-500 to-purple-600',
   },
   {
     title: 'Resume Feedback',
     description: 'Get AI-powered feedback on how to improve your resume for better job application success.',
-    icon: <FeedbackIcon sx={{ fontSize: 60 }} />,
+    icon: MessageSquare,
     link: '/feedback',
-    color: '#4caf50',
+    gradient: 'from-cyan-500 to-cyan-600',
   },
 ];
 
 const HomePage = () => {
-  const theme = useTheme();
-
   return (
-    <Box className="page-container" sx={{ width: '100%', maxWidth: '100%', overflowX: 'hidden' }}>
+    <div className="w-full overflow-hidden">
       {/* Hero Section */}
-      <Box sx={{ position: 'relative', width: '100%' }}>
-        <Paper
-          sx={{
-            position: 'relative',
-            backgroundColor: 'grey.800',
-            color: '#fff',
-            mb: 0,
-            backgroundSize: 'cover',
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'center',
-            backgroundImage: 'url(https://source.unsplash.com/random?office,professional)',
-            borderRadius: 0,
-            overflow: 'hidden',
-            width: '100%',
-            minHeight: '600px',
-          }}
-        >
-          <Box
-            sx={{
-              position: 'absolute',
-              top: 0,
-              bottom: 0,
-              right: 0,
-              left: 0,
-              backgroundColor: 'rgba(0,0,0,.7)',
-              backgroundImage: 'linear-gradient(to right, rgba(25,25,112,0.8), rgba(0,0,0,0.6))',
-            }}
-          />
-          <Container maxWidth="xl">
-            <Grid container spacing={4} sx={{ position: 'relative', py: { xs: 6, md: 10 } }}>
-              <Grid item xs={12} md={6}>
-                <Box
-                  sx={{
-                    position: 'relative',
-                    p: { xs: 3, md: 0 },
-                    pr: { md: 0 },
-                    mt: { xs: 2, md: 4 },
-                  }}
+      <section className="relative min-h-screen flex items-center bg-gradient-dark">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2310b981' fill-opacity='0.1'%3E%3Ccircle cx='7' cy='7' r='7'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          }} />
+        </div>
+
+        <div className="content-container relative z-10">
+          <div className="grid lg:grid-cols-2 gap-12 items-center min-h-[80vh] py-20">
+            {/* Hero Content */}
+            <div className="space-y-8">
+              <div className="space-y-6">
+                <h1 className="text-5xl lg:text-7xl font-bold leading-tight">
+                  <span className="text-white">AI-Powered</span>
+                  <br />
+                  <span className="text-gradient">Resume</span>
+                  <br />
+                  <span className="text-white">Optimization</span>
+                </h1>
+                
+                <p className="text-xl text-gray-300 leading-relaxed max-w-xl">
+                  Land your dream job with our AI tools that optimize your resume, match job descriptions, and generate tailored cover letters.
+                </p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Link
+                  to="/resume"
+                  className="btn-primary text-center group"
                 >
-                  <Typography 
-                    component="h1" 
-                    variant="h2" 
-                    color="inherit" 
-                    gutterBottom 
-                    className="slide-up"
-                    sx={{ fontWeight: 'bold', mb: 2 }}
-                  >
-                    AI-Powered Resume Optimization
-                  </Typography>
-                  <Typography 
-                    variant="h5" 
-                    color="inherit" 
-                    paragraph 
-                    className="slide-up" 
-                    sx={{ 
-                      animation: 'slideUp 0.5s ease-out 0.2s both',
-                      mb: 4,
-                      maxWidth: '90%'
-                    }}
-                  >
-                    Land your dream job with our AI tools that optimize your resume, match job descriptions, and generate tailored cover letters.
-                  </Typography>
-                  <Stack
-                    direction={{ xs: 'column', sm: 'row' }}
-                    spacing={2}
-                    className="slide-up"
-                    sx={{ animation: 'slideUp 0.5s ease-out 0.4s both', mb: 6 }}
-                  >
-                    <Button
-                      variant="contained"
-                      size="large"
-                      component={RouterLink}
-                      to="/resume"
-                      sx={{ 
-                        borderRadius: 8, 
-                        py: 1.5, 
-                        px: 4,
-                        fontSize: '1.1rem',
-                        backgroundColor: theme.palette.secondary.main,
-                        '&:hover': {
-                          backgroundColor: theme.palette.secondary.dark,
-                        }
-                      }}
-                    >
-                      Get Started Now
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      size="large"
-                      color="inherit"
-                      component={RouterLink}
-                      to="/register"
-                      sx={{ 
-                        borderRadius: 8, 
-                        py: 1.5, 
-                        px: 4,
-                        fontSize: '1.1rem',
-                        borderWidth: 2,
-                        '&:hover': {
-                          borderWidth: 2,
-                        }
-                      }}
-                    >
-                      Sign Up Free
-                    </Button>
-                  </Stack>
-                </Box>
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <Box sx={{ position: 'relative', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Grid container spacing={2} className="feature-highlights" sx={{ animation: 'fadeIn 0.8s ease-out 0.6s both' }}>
-                    {[
-                      {
-                        icon: <ResumeIcon sx={{ fontSize: 40, color: theme.palette.secondary.main }} />,
-                        title: 'ATS-Friendly Format',
-                        description: 'Optimize your resume to pass Applicant Tracking Systems'
-                      },
-                      {
-                        icon: <JobIcon sx={{ fontSize: 40, color: '#f50057' }} />,
-                        title: 'Smart Keyword Matching',
-                        description: 'Match your skills with job descriptions for higher relevance'
-                      },
-                      {
-                        icon: <CoverLetterIcon sx={{ fontSize: 40, color: '#00bcd4' }} />,
-                        title: 'Custom Cover Letters',
-                        description: 'Generate tailored cover letters in seconds'
-                      },
-                      {
-                        icon: <FeedbackIcon sx={{ fontSize: 40, color: '#4caf50' }} />,
-                        title: 'Actionable Feedback',
-                        description: 'Get expert suggestions to improve your application'
-                      }
-                    ].map((feature, index) => (
-                      <Grid item xs={12} sm={6} key={index}>
-                        <Paper
-                          elevation={4}
-                          sx={{
-                            p: 2.5,
-                            height: '100%',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                            color: 'text.primary',
-                            transition: 'transform 0.3s',
-                            '&:hover': {
-                              transform: 'translateY(-5px)',
-                            },
-                            borderLeft: `4px solid ${index === 0 ? theme.palette.secondary.main : 
-                                         index === 1 ? '#f50057' : 
-                                         index === 2 ? '#00bcd4' : '#4caf50'}`,
-                          }}
-                        >
-                          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                            {feature.icon}
-                            <Typography variant="h6" component="h3" sx={{ ml: 1, fontWeight: 'bold' }}>
-                              {feature.title}
-                            </Typography>
-                          </Box>
-                          <Typography variant="body2">
-                            {feature.description}
-                          </Typography>
-                        </Paper>
-                      </Grid>
-                    ))}
-                  </Grid>
-                </Box>
-              </Grid>
-            </Grid>
-          </Container>
-        </Paper>
-        
-        {/* Stats Banner */}
-        <Paper
-          elevation={4}
-          sx={{
-            position: 'relative',
-            zIndex: 2,
-            mx: { xs: 2, md: 8, lg: 15 },
-            mt: -4,
-            mb: 6,
-            py: 3,
-            px: 4,
-            borderRadius: 2,
-            backgroundColor: theme.palette.primary.main,
-            color: 'white',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
-          }}
-        >
-          <Grid container spacing={2} alignItems="center" justifyContent="center">
-            {[
-              { value: 'AI-Powered', label: 'Resume Analysis' },
-              { value: 'Industry-Specific', label: 'Recommendations' },
-              { value: 'Instant', label: 'Feedback' },
-              { value: 'Free', label: 'Basic Features' }
-            ].map((stat, index) => (
-              <Grid item xs={6} sm={3} key={index} sx={{ textAlign: 'center' }}>
-                <Typography variant="h5" component="p" sx={{ fontWeight: 'bold' }}>
-                  {stat.value}
-                </Typography>
-                <Typography variant="body2">{stat.label}</Typography>
-              </Grid>
-            ))}
-          </Grid>
-        </Paper>
-      </Box>
-      
+                  <span>Get Started Now</span>
+                  <ChevronRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                </Link>
+                <Link
+                  to="/register"
+                  className="btn-secondary text-center"
+                >
+                  Sign Up Free
+                </Link>
+              </div>
+
+              {/* Stats */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 pt-8 border-t border-dark-800">
+                {[
+                  { value: 'AI-Powered', label: 'Analysis' },
+                  { value: 'Industry-Specific', label: 'Recommendations' },
+                  { value: 'Instant', label: 'Feedback' },
+                  { value: 'Free', label: 'Basic Features' }
+                ].map((stat, index) => (
+                  <div key={index} className="text-center">
+                    <div className="text-sm font-semibold text-neon-400">{stat.value}</div>
+                    <div className="text-xs text-gray-500">{stat.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Hero Visual */}
+            <div className="relative">
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  { icon: Shield, title: 'ATS-Friendly Format', desc: 'Pass tracking systems' },
+                  { icon: Target, title: 'Smart Matching', desc: 'Keyword optimization' },
+                  { icon: Brain, title: 'AI-Powered', desc: 'Intelligent analysis' },
+                  { icon: TrendingUp, title: 'Success Rate', desc: 'Higher job offers' }
+                ].map((feature, index) => {
+                  const Icon = feature.icon;
+                  return (
+                    <div key={index} className="card card-hover p-6 fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                      <div className="flex items-center space-x-3 mb-3">
+                        <div className="w-10 h-10 bg-gradient-neon rounded-lg flex items-center justify-center">
+                          <Icon className="w-5 h-5 text-dark-950" />
+                        </div>
+                      </div>
+                      <h3 className="font-semibold text-gray-200 mb-2">{feature.title}</h3>
+                      <p className="text-sm text-gray-400">{feature.desc}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Floating Elements */}
+        <div className="absolute top-20 right-10 w-2 h-2 bg-neon-500 rounded-full animate-pulse opacity-60"></div>
+        <div className="absolute bottom-32 left-16 w-1 h-1 bg-electric-500 rounded-full animate-pulse opacity-40"></div>
+      </section>
+
       {/* Features Section */}
-      <Box sx={{ 
-        py: 8, 
-        width: '100%',
-        background: 'linear-gradient(180deg, #ffffff 0%, rgba(240, 242, 245, 0.8) 100%)',
-        position: 'relative',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: '100px',
-          background: 'linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%)',
-          transform: 'translateY(-100%)',
-        }
-      }}>
-        <Container maxWidth="xl">
-          <Typography
-            component="h2"
-            variant="h3"
-            align="center"
-            color="text.primary"
-            gutterBottom
-            className="section-title"
-            sx={{ 
-              mb: 2,
-              fontWeight: 'bold',
-              position: 'relative',
-              '&::after': {
-                content: '""',
-                display: 'block',
-                width: '80px',
-                height: '4px',
-                backgroundColor: theme.palette.secondary.main,
-                margin: '16px auto 0',
-                borderRadius: '2px',
-              }
-            }}
-          >
-            Our Features
-          </Typography>
-          <Typography 
-            variant="h6" 
-            align="center" 
-            color="text.secondary" 
-            sx={{ mb: 6, maxWidth: '800px', mx: 'auto', px: { xs: 2, sm: 0 } }}
-          >
-            Powerful tools to optimize your job application process
-          </Typography>
-          <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
-            {featureCards.map((card, index) => (
-              <Grid item key={card.title} xs={12} sm={6} md={6} lg={3} className="fade-in" sx={{ animation: `fadeIn 0.5s ease-in ${index * 0.2}s both` }}>
-                <Card
-                  component={RouterLink}
+      <section className="section-spacing bg-dark-900">
+        <div className="content-container">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl lg:text-5xl font-bold text-white mb-6">
+              Powerful <span className="text-gradient">Features</span>
+            </h2>
+            <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+              Everything you need to optimize your job application process and stand out from the competition
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {featureCards.map((card, index) => {
+              const Icon = card.icon;
+              return (
+                <Link
+                  key={card.title}
                   to={card.link}
-                  sx={{
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    transition: 'all 0.3s ease-in-out',
-                    textDecoration: 'none',
-                    color: 'inherit',
-                    borderRadius: 2,
-                    overflow: 'hidden',
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                    '&:hover': {
-                      transform: 'translateY(-8px)',
-                      boxShadow: '0 12px 28px rgba(0,0,0,0.15)',
-                    },
-                    cursor: 'pointer',
-                  }}
+                  className="group card card-hover block fade-in"
+                  style={{ animationDelay: `${index * 0.1}s` }}
                 >
-                  <Box
-                    sx={{
-                      background: `linear-gradient(135deg, ${card.color} 0%, ${card.color}dd 100%)`,
-                      p: 3,
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      color: 'white',
-                    }}
-                  >
-                    {card.icon}
-                  </Box>
-                  <CardContent sx={{ flexGrow: 1, p: 3 }}>
-                    <Typography gutterBottom variant="h5" component="h3" sx={{ fontWeight: 'bold' }}>
+                  <div className="p-8">
+                    {/* Icon Header */}
+                    <div className={`w-16 h-16 bg-gradient-to-r ${card.gradient} rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                      <Icon className="w-8 h-8 text-white" />
+                    </div>
+
+                    {/* Content */}
+                    <h3 className="text-xl font-semibold text-white mb-4 group-hover:text-neon-400 transition-colors">
                       {card.title}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
+                    </h3>
+                    <p className="text-gray-400 mb-6 line-clamp-3">
                       {card.description}
-                    </Typography>
-                  </CardContent>
-                  <Box sx={{ p: 2, pt: 0 }}>
-                    <Button
-                      variant="outlined"
-                      fullWidth
-                      sx={{ 
-                        borderRadius: 8,
-                        borderColor: card.color,
-                        color: card.color,
-                        '&:hover': {
-                          borderColor: card.color,
-                          backgroundColor: `${card.color}10`,
-                        }
-                      }}
-                    >
-                      Try Now
-                    </Button>
-                  </Box>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        </Container>
-      </Box>
+                    </p>
+
+                    {/* CTA */}
+                    <div className="flex items-center text-neon-400 font-medium group-hover:text-neon-300 transition-colors">
+                      <span>Try Now</span>
+                      <ChevronRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </section>
 
       {/* How It Works Section */}
-      <Box sx={{ 
-        position: 'relative',
-        py: 8, 
-        width: '100%',
-        backgroundImage: 'linear-gradient(to right, rgba(25,25,112,0.03), rgba(0,0,0,0.02))',
-        backgroundSize: 'cover',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: '8px',
-          background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-        }
-      }}>
-        <Container maxWidth="xl">
-          <Typography
-            component="h2"
-            variant="h3"
-            align="center"
-            color="text.primary"
-            gutterBottom
-            className="section-title"
-            sx={{ 
-              mb: 2,
-              fontWeight: 'bold',
-              position: 'relative',
-              '&::after': {
-                content: '""',
-                display: 'block',
-                width: '80px',
-                height: '4px',
-                backgroundColor: theme.palette.primary.main,
-                margin: '16px auto 0',
-                borderRadius: '2px',
+      <section className="section-spacing bg-dark-950 border-t border-dark-800">
+        <div className="content-container">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl lg:text-5xl font-bold text-white mb-6">
+              How It <span className="text-gradient">Works</span>
+            </h2>
+            <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+              Four simple steps to optimize your resume and land your dream job
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+              {
+                step: '1',
+                title: 'Upload Your Resume',
+                description: 'Upload your resume in PDF, DOCX, or TXT format. Our AI parser extracts key information.',
+                features: ['Contact information', 'Work experience', 'Education history', 'Skills & certifications'],
+                color: 'neon'
+              },
+              {
+                step: '2',
+                title: 'Add Job Description',
+                description: 'Paste a job description or upload a job posting PDF for detailed analysis.',
+                features: ['Required skills', 'Key responsibilities', 'Qualifications', 'Company culture'],
+                color: 'electric'
+              },
+              {
+                step: '3',
+                title: 'Get Analysis',
+                description: 'Our AI analyzes your resume against job requirements and provides insights.',
+                features: ['Skill match %', 'Missing keywords', 'Experience alignment', 'ATS optimization'],
+                color: 'purple'
+              },
+              {
+                step: '4',
+                title: 'Optimize & Apply',
+                description: 'Use our tools to perfect your application and increase your chances.',
+                features: ['Cover letter generation', 'Resume improvements', 'Interview prep', 'Follow-up templates'],
+                color: 'cyan'
               }
-            }}
-          >
-            How It Works
-          </Typography>
-          <Typography 
-            variant="h6" 
-            align="center" 
-            color="text.secondary" 
-            sx={{ mb: 6, maxWidth: '800px', mx: 'auto', px: { xs: 2, sm: 0 } }}
-          >
-            Three simple steps to optimize your resume and land your dream job
-          </Typography>
-          <Grid container spacing={{ xs: 3, sm: 4, md: 5 }} justifyContent="center">
-            {/* Step 1 */}
-            <Grid item xs={12} sm={6} md={6} lg={3}>
-              <Card 
-                elevation={0}
-                sx={{ 
-                  height: '100%', 
-                  borderRadius: 3,
-                  overflow: 'hidden',
-                  position: 'relative',
-                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                  boxShadow: '0 6px 20px rgba(0,0,0,0.08)',
-                  '&:hover': {
-                    transform: 'translateY(-8px)',
-                    boxShadow: '0 12px 28px rgba(0,0,0,0.15)',
-                  }
-                }}
-              >
-                <Box sx={{
-                  height: '8px',
-                  width: '100%',
-                  background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.primary.light})`,
-                }} />
-                <CardContent sx={{ textAlign: 'center', p: { xs: 2, sm: 3 } }}>
-                  <Box 
-                    sx={{ 
-                      bgcolor: theme.palette.primary.main, 
-                      color: 'white', 
-                      width: { xs: 60, sm: 70 }, 
-                      height: { xs: 60, sm: 70 }, 
-                      borderRadius: '50%', 
-                      display: 'flex', 
-                      justifyContent: 'center', 
-                      alignItems: 'center',
-                      margin: '0 auto 24px',
-                      fontSize: { xs: '24px', sm: '28px' },
-                      fontWeight: 'bold',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                    }}
-                  >
-                    1
-                  </Box>
-                  <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
-                    Upload Your Resume
-                  </Typography>
-                  <Typography variant="body1" color="text.secondary" paragraph>
-                    Upload your resume in PDF, DOCX, or TXT format. Our advanced AI parser will extract key information including:
-                  </Typography>
-                  <Box sx={{ textAlign: 'left', pl: 2 }}>
-                    <Typography variant="body2" sx={{ mb: 1 }}>• Contact information</Typography>
-                    <Typography variant="body2" sx={{ mb: 1 }}>• Work experience</Typography>
-                    <Typography variant="body2" sx={{ mb: 1 }}>• Education history</Typography>
-                    <Typography variant="body2" sx={{ mb: 1 }}>• Skills and certifications</Typography>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-            
-            {/* Step 2 */}
-            <Grid item xs={12} sm={6} md={6} lg={3}>
-              <Card 
-                elevation={0}
-                sx={{ 
-                  height: '100%', 
-                  borderRadius: 3,
-                  overflow: 'hidden',
-                  position: 'relative',
-                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                  boxShadow: '0 6px 20px rgba(0,0,0,0.08)',
-                  '&:hover': {
-                    transform: 'translateY(-8px)',
-                    boxShadow: '0 12px 28px rgba(0,0,0,0.15)',
-                  }
-                }}
-              >
-                <Box sx={{
-                  height: '8px',
-                  width: '100%',
-                  background: `linear-gradient(90deg, #ff9800, #ffc107)`,
-                }} />
-                <CardContent sx={{ textAlign: 'center', p: { xs: 2, sm: 3 } }}>
-                  <Box 
-                    sx={{ 
-                      bgcolor: '#ff9800', 
-                      color: 'white', 
-                      width: { xs: 60, sm: 70 }, 
-                      height: { xs: 60, sm: 70 }, 
-                      borderRadius: '50%', 
-                      display: 'flex', 
-                      justifyContent: 'center', 
-                      alignItems: 'center',
-                      margin: '0 auto 24px',
-                      fontSize: { xs: '24px', sm: '28px' },
-                      fontWeight: 'bold',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                    }}
-                  >
-                    2
-                  </Box>
-                  <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
-                    Add Job Description
-                  </Typography>
-                  <Typography variant="body1" color="text.secondary" paragraph>
-                    Paste a job description or upload a job posting PDF. Our system will analyze:
-                  </Typography>
-                  <Box sx={{ textAlign: 'left', pl: 2 }}>
-                    <Typography variant="body2" sx={{ mb: 1 }}>• Required skills</Typography>
-                    <Typography variant="body2" sx={{ mb: 1 }}>• Key responsibilities</Typography>
-                    <Typography variant="body2" sx={{ mb: 1 }}>• Preferred qualifications</Typography>
-                    <Typography variant="body2" sx={{ mb: 1 }}>• Company values and culture</Typography>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-            
-            {/* Step 3 */}
-            <Grid item xs={12} sm={6} md={6} lg={3}>
-              <Card 
-                elevation={0}
-                sx={{ 
-                  height: '100%', 
-                  borderRadius: 3,
-                  overflow: 'hidden',
-                  position: 'relative',
-                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                  boxShadow: '0 6px 20px rgba(0,0,0,0.08)',
-                  '&:hover': {
-                    transform: 'translateY(-8px)',
-                    boxShadow: '0 12px 28px rgba(0,0,0,0.15)',
-                  }
-                }}
-              >
-                <Box sx={{
-                  height: '8px',
-                  width: '100%',
-                  background: `linear-gradient(90deg, #9c27b0, #ba68c8)`,
-                }} />
-                <CardContent sx={{ textAlign: 'center', p: { xs: 2, sm: 3 } }}>
-                  <Box 
-                    sx={{ 
-                      bgcolor: '#9c27b0', 
-                      color: 'white', 
-                      width: { xs: 60, sm: 70 }, 
-                      height: { xs: 60, sm: 70 }, 
-                      borderRadius: '50%', 
-                      display: 'flex', 
-                      justifyContent: 'center', 
-                      alignItems: 'center',
-                      margin: '0 auto 24px',
-                      fontSize: { xs: '24px', sm: '28px' },
-                      fontWeight: 'bold',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                    }}
-                  >
-                    3
-                  </Box>
-                  <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
-                    Get Matches & Analysis
-                  </Typography>
-                  <Typography variant="body1" color="text.secondary" paragraph>
-                    Our AI analyzes your resume against the job requirements and provides:
-                  </Typography>
-                  <Box sx={{ textAlign: 'left', pl: 2 }}>
-                    <Typography variant="body2" sx={{ mb: 1 }}>• Skill match percentage</Typography>
-                    <Typography variant="body2" sx={{ mb: 1 }}>• Missing keywords and skills</Typography>
-                    <Typography variant="body2" sx={{ mb: 1 }}>• Experience alignment</Typography>
-                    <Typography variant="body2" sx={{ mb: 1 }}>• ATS optimization suggestions</Typography>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-            
-            {/* Step 4 */}
-            <Grid item xs={12} sm={6} md={6} lg={3}>
-              <Card 
-                elevation={0}
-                sx={{ 
-                  height: '100%', 
-                  borderRadius: 3,
-                  overflow: 'hidden',
-                  position: 'relative',
-                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                  boxShadow: '0 6px 20px rgba(0,0,0,0.08)',
-                  '&:hover': {
-                    transform: 'translateY(-8px)',
-                    boxShadow: '0 12px 28px rgba(0,0,0,0.15)',
-                  }
-                }}
-              >
-                <Box sx={{
-                  height: '8px',
-                  width: '100%',
-                  background: `linear-gradient(90deg, #4caf50, #8bc34a)`,
-                }} />
-                <CardContent sx={{ textAlign: 'center', p: { xs: 2, sm: 3 } }}>
-                  <Box 
-                    sx={{ 
-                      bgcolor: '#4caf50', 
-                      color: 'white', 
-                      width: { xs: 60, sm: 70 }, 
-                      height: { xs: 60, sm: 70 }, 
-                      borderRadius: '50%', 
-                      display: 'flex', 
-                      justifyContent: 'center', 
-                      alignItems: 'center',
-                      margin: '0 auto 24px',
-                      fontSize: { xs: '24px', sm: '28px' },
-                      fontWeight: 'bold',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                    }}
-                  >
-                    4
-                  </Box>
-                  <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
-                    Optimize & Apply
-                  </Typography>
-                  <Typography variant="body1" color="text.secondary" paragraph>
-                    Use our tools to perfect your application:
-                  </Typography>
-                  <Box sx={{ textAlign: 'left', pl: 2 }}>
-                    <Typography variant="body2" sx={{ mb: 1 }}>• Tailored cover letter generation</Typography>
-                    <Typography variant="body2" sx={{ mb: 1 }}>• Resume improvement suggestions</Typography>
-                    <Typography variant="body2" sx={{ mb: 1 }}>• Interview preparation tips</Typography>
-                    <Typography variant="body2" sx={{ mb: 1 }}>• Follow-up email templates</Typography>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
-          
-          {/* Additional Information */}
-          <Box sx={{ mt: 8, bgcolor: 'rgba(0,0,0,0.04)', p: 4, borderRadius: 2 }}>
-            <Typography variant="h5" gutterBottom align="center" sx={{ mb: 3 }}>
-              Why Our AI Resume Optimizer Works
-            </Typography>
-            
-            <Grid container spacing={4}>
-              <Grid item xs={12} md={4}>
-                <Box sx={{ textAlign: 'center', mb: 2 }}>
-                  <Typography variant="h6" color="primary" gutterBottom>
-                    ATS-Friendly Format
-                  </Typography>
-                </Box>
-                <Typography variant="body2" paragraph>
-                  Our system ensures your resume passes through Applicant Tracking Systems by optimizing format, keywords, and content structure that hiring software looks for.
-                </Typography>
-              </Grid>
-              
-              <Grid item xs={12} md={4}>
-                <Box sx={{ textAlign: 'center', mb: 2 }}>
-                  <Typography variant="h6" color="primary" gutterBottom>
-                    Industry-Specific Analysis
-                  </Typography>
-                </Box>
-                <Typography variant="body2" paragraph>
-                  We've trained our AI on thousands of successful resumes across different industries to provide tailored recommendations specific to your field and career level.
-                </Typography>
-              </Grid>
-              
-              <Grid item xs={12} md={4}>
-                <Box sx={{ textAlign: 'center', mb: 2 }}>
-                  <Typography variant="h6" color="primary" gutterBottom>
-                    Continuous Learning
-                  </Typography>
-                </Box>
-                <Typography variant="body2" paragraph>
-                  Our AI continuously improves by analyzing successful job applications and staying updated with the latest hiring trends and recruiter preferences.
-                </Typography>
-              </Grid>
-            </Grid>
-            
-            <Box sx={{ textAlign: 'center', mt: 4 }}>
-              <Button 
-                variant="contained" 
-                size="large" 
-                component={RouterLink} 
-                to="/resume" 
-                sx={{ borderRadius: 8, px: 4 }}
-              >
-                Start Optimizing Your Resume
-              </Button>
-            </Box>
-          </Box>
-        </Container>
-      </Box>
+            ].map((step, index) => (
+              <div key={step.step} className="relative fade-in" style={{ animationDelay: `${index * 0.2}s` }}>
+                {/* Connector Line */}
+                {index < 3 && (
+                  <div className="hidden lg:block absolute top-16 -right-4 w-8 h-0.5 bg-gradient-to-r from-neon-500 to-transparent"></div>
+                )}
+                
+                <div className="card p-8 text-center h-full">
+                  {/* Step Number */}
+                  <div className={`w-16 h-16 mx-auto mb-6 rounded-full flex items-center justify-center font-bold text-xl text-dark-950 ${
+                    step.color === 'neon' ? 'bg-gradient-neon shadow-glow-sm' :
+                    step.color === 'electric' ? 'bg-gradient-electric' :
+                    step.color === 'purple' ? 'bg-gradient-to-r from-purple-500 to-purple-600' :
+                    'bg-gradient-to-r from-cyan-500 to-cyan-600'
+                  }`}>
+                    {step.step}
+                  </div>
+
+                  {/* Content */}
+                  <h3 className="text-xl font-semibold text-white mb-4">
+                    {step.title}
+                  </h3>
+                  <p className="text-gray-400 mb-6">
+                    {step.description}
+                  </p>
+
+                  {/* Features List */}
+                  <ul className="space-y-2 text-sm">
+                    {step.features.map((feature, i) => (
+                      <li key={i} className="flex items-center text-gray-300">
+                        <Check className="w-4 h-4 text-neon-400 mr-2 flex-shrink-0" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Why It Works Section */}
+      <section className="section-spacing bg-dark-900">
+        <div className="content-container">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl lg:text-5xl font-bold text-white mb-6">
+              Why Our AI <span className="text-gradient">Works</span>
+            </h2>
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-8 mb-12">
+            {[
+              {
+                title: 'ATS-Friendly Format',
+                description: 'Our system ensures your resume passes through Applicant Tracking Systems by optimizing format, keywords, and content structure.',
+                icon: Shield
+              },
+              {
+                title: 'Industry-Specific Analysis',
+                description: 'We\'ve trained our AI on thousands of successful resumes across different industries to provide tailored recommendations.',
+                icon: Target
+              },
+              {
+                title: 'Continuous Learning',
+                description: 'Our AI continuously improves by analyzing successful job applications and staying updated with hiring trends.',
+                icon: Brain
+              }
+            ].map((feature, index) => {
+              const Icon = feature.icon;
+              return (
+                <div key={index} className="card p-8 text-center fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                  <div className="w-16 h-16 bg-gradient-neon rounded-xl flex items-center justify-center mx-auto mb-6">
+                    <Icon className="w-8 h-8 text-dark-950" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-white mb-4">{feature.title}</h3>
+                  <p className="text-gray-400">{feature.description}</p>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="text-center">
+            <Link to="/resume" className="btn-primary inline-flex items-center">
+              <Zap className="w-5 h-5 mr-2" />
+              Start Optimizing Your Resume
+            </Link>
+          </div>
+        </div>
+      </section>
 
       {/* CTA Section */}
-      <Box sx={{ py: 8, width: '100%' }}>
-        <Container maxWidth="lg">
-          <Paper
-            sx={{
-              p: 4,
-              textAlign: 'center',
-              borderRadius: 4,
-              bgcolor: theme.palette.primary.main,
-              color: 'white',
-            }}
-          >
-            <Typography variant="h4" gutterBottom>
-              Ready to Optimize Your Job Search?
-            </Typography>
-            <Typography variant="body1" paragraph sx={{ mb: 4 }}>
-              Join thousands of job seekers who have improved their resumes and landed their dream jobs.
-            </Typography>
-            <Stack
-              direction={{ xs: 'column', sm: 'row' }}
-              spacing={2}
-              justifyContent="center"
-            >
-              <Button
-                variant="contained"
-                color="secondary"
-                size="large"
-                component={RouterLink}
-                to="/resume"
-                sx={{ borderRadius: 8 }}
-              >
-                Get Started Now
-              </Button>
-              <Button
-                variant="outlined"
-                color="inherit"
-                size="large"
-                component={RouterLink}
-                to="/register"
-                sx={{ borderRadius: 8 }}
-              >
-                Create Account
-              </Button>
-            </Stack>
-          </Paper>
-        </Container>
-      </Box>
-    </Box>
+      <section className="section-spacing bg-gradient-to-r from-dark-950 to-dark-900 border-t border-dark-800">
+        <div className="content-container">
+          <div className="card p-12 text-center bg-gradient-card border-neon-500">
+            <div className="max-w-3xl mx-auto">
+              <h2 className="text-4xl lg:text-5xl font-bold text-white mb-6">
+                Ready to <span className="text-gradient">Optimize</span> Your Job Search?
+              </h2>
+              <p className="text-xl text-gray-300 mb-8">
+                Join thousands of job seekers who have improved their resumes and landed their dream jobs with our AI-powered platform.
+              </p>
+              
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link to="/resume" className="btn-primary text-center">
+                  <Zap className="w-5 h-5 mr-2" />
+                  Get Started Now
+                </Link>
+                <Link to="/register" className="btn-secondary text-center">
+                  Create Free Account
+                </Link>
+              </div>
+
+              {/* Trust Indicators */}
+              <div className="flex items-center justify-center space-x-6 mt-8 pt-8 border-t border-dark-700">
+                <div className="flex items-center space-x-2 text-gray-400">
+                  <Star className="w-5 h-5 text-yellow-400 fill-current" />
+                  <span className="text-sm">Free to start</span>
+                </div>
+                <div className="flex items-center space-x-2 text-gray-400">
+                  <Shield className="w-5 h-5 text-neon-400" />
+                  <span className="text-sm">Privacy protected</span>
+                </div>
+                <div className="flex items-center space-x-2 text-gray-400">
+                  <TrendingUp className="w-5 h-5 text-electric-400" />
+                  <span className="text-sm">Proven results</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
   );
 };
 

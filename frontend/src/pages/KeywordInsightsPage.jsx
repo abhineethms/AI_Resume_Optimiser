@@ -2,36 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Container,
-  Grid,
-  Typography,
-  CircularProgress,
-  Chip,
-  Alert,
-  Stack,
-  Tabs,
-  Tab,
-  Paper,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Divider,
-  Tooltip,
-  TextField,
-  InputAdornment
-} from '@mui/material';
-import {
-  CheckCircleOutline as CheckIcon,
-  WarningAmber as WarningIcon,
-  Cancel as CancelIcon,
-  Search as SearchIcon,
-  FilterList as FilterIcon
-} from '@mui/icons-material';
+  Search,
+  Filter,
+  CheckCircle,
+  AlertTriangle,
+  X,
+  ArrowLeft,
+  ArrowRight,
+  Target,
+  TrendingUp,
+  Activity
+} from 'lucide-react';
 import { fetchKeywordInsights } from '../redux/slices/keywordSlice';
 import ProcessStepper from '../components/ui/ProcessStepper';
 import { Doughnut, Bar } from 'react-chartjs-2';
@@ -41,21 +22,18 @@ import { Chart as ChartJS, ArcElement, Tooltip as ChartTooltip, Legend, Category
 ChartJS.register(ArcElement, ChartTooltip, Legend, CategoryScale, LinearScale, BarElement, Title);
 
 // Tab Panel component
-function TabPanel(props) {
-  const { children, value, index, ...other } = props;
-
+function TabPanel({ children, value, index }) {
   return (
     <div
       role="tabpanel"
       hidden={value !== index}
       id={`keyword-tabpanel-${index}`}
       aria-labelledby={`keyword-tab-${index}`}
-      {...other}
     >
       {value === index && (
-        <Box sx={{ p: 3 }}>
+        <div className="pt-6">
           {children}
-        </Box>
+        </div>
       )}
     </div>
   );
@@ -98,7 +76,7 @@ const KeywordInsightsPage = () => {
             console.error('No resume found in localStorage');
           }
         } else {
-          console.log('Using resume from Redux state:', currentResume._id);
+          console.log('Resume found in Redux state:', resumeToUse._id);
         }
         
         if (!jobToUse) {
@@ -111,136 +89,97 @@ const KeywordInsightsPage = () => {
             console.error('No job found in localStorage');
           }
         } else {
-          console.log('Using job from Redux state:', currentJob._id);
+          console.log('Job found in Redux state:', jobToUse._id);
         }
-
+        
         if (!matchToUse) {
           console.log('No match in Redux state, checking localStorage...');
           const savedMatch = JSON.parse(localStorage.getItem('currentMatch'));
           if (savedMatch) {
-            console.log('Match found in localStorage:', savedMatch);
+            console.log('Match found in localStorage:', savedMatch._id);
             matchToUse = savedMatch;
           } else {
             console.error('No match found in localStorage');
           }
         } else {
-          console.log('Using match from Redux state:', currentMatch);
-        }
-        
-        // If still no resume or job data available, redirect to resume parser
-        if (!resumeToUse || !jobToUse) {
-          console.error("Missing resume or job data. Redirecting to resume parser.");
-          navigate('/resume');
-          return;
-        }
-        
-        // Make sure we have IDs
-        if (!resumeToUse?._id && !resumeToUse?.resumeId && !resumeToUse?.id) {
-          console.error("Resume object exists but has no valid ID property (_id, resumeId, or id)");
-          // Try to fix the resume object if possible
-          if (resumeToUse) {
-            // If we have the resume data but no ID, let's check if the ID might be stored elsewhere
-            if (matchToUse?.resumeId) {
-              resumeToUse._id = matchToUse.resumeId;
-              console.log("Using resumeId from match:", matchToUse.resumeId);
-            } else {
-              navigate('/resume');
-              return;
-            }
-          } else {
-            navigate('/resume');
-            return;
-          }
-        }
-        
-        if (!jobToUse?._id && !jobToUse?.jobId && !jobToUse?.id) {
-          console.error("Job object exists but has no valid ID property (_id, jobId, or id)");
-          // Try to fix the job object if possible
-          if (jobToUse) {
-            // If we have the job data but no ID, let's check if the ID might be stored elsewhere
-            if (matchToUse?.jobId) {
-              jobToUse._id = matchToUse.jobId;
-              console.log("Using jobId from match:", matchToUse.jobId);
-            } else {
-              navigate('/job-match');
-              return;
-            }
-          } else {
-            navigate('/job-match');
-            return;
-          }
+          console.log('Match found in Redux state:', matchToUse._id);
         }
 
-        // Get the appropriate ID regardless of property name
-        const resumeId = resumeToUse._id || resumeToUse.resumeId || resumeToUse.id;
-        const jobId = jobToUse._id || jobToUse.jobId || jobToUse.id;
-        
-        console.log("Final IDs for keyword insights:", {
-          resumeId,
-          jobId
-        });
-
-        // Fetch keyword insights if we don't have them yet
-        if (!currentKeywordInsights) {
-          try {
-            console.log("Fetching keyword insights with:", {
-              resumeId,
-              jobId
-            });
-            
-            dispatch(fetchKeywordInsights({ 
-              resumeId, 
-              jobId 
-            }));
-          } catch (err) {
-            console.error("Error dispatching fetchKeywordInsights:", err);
+        // Check if we need to fetch keyword insights
+        if (!currentKeywordInsights && resumeToUse && matchToUse) {
+          console.log('Dispatching fetchKeywordInsights...');
+          const matchId = matchToUse._id || matchToUse.id;
+          if (matchId) {
+            console.log('Fetching keyword insights for match:', matchId);
+            await dispatch(fetchKeywordInsights(matchId));
+          } else {
+            console.error('No match ID found');
           }
+        } else if (currentKeywordInsights) {
+          console.log('Keyword insights already available:', currentKeywordInsights);
+        } else {
+          console.log('Missing required data for keyword insights');
         }
       } catch (error) {
-        console.error("Error in KeywordInsightsPage initialization:", error);
+        console.error('Error initializing keyword insights data:', error);
       }
     };
-    
+
     initializeData();
-  }, [currentResume, currentJob, currentMatch, currentKeywordInsights, dispatch, navigate]);
+  }, [dispatch, currentResume, currentJob, currentMatch, currentKeywordInsights]);
 
-  const handleTabChange = (event, newValue) => {
-    setTabValue(newValue);
-  };
-
-  const handleClusterChange = (event) => {
-    setSelectedCluster(event.target.value);
-  };
-
-  const handleSearchChange = (event) => {
-    setSearchTerm(event.target.value);
-  };
-
-  const handleContinue = () => {
-    navigate('/cover-letter');
-  };
-
-  const handleBack = () => {
-    navigate('/match-results');
-  };
-
-  const getStrengthColor = (strength) => {
+  // Helper function to get status-based styling
+  const getStatusStyling = (strength) => {
     switch (strength) {
       case 'Strong':
-        return { color: 'success', icon: <CheckIcon /> };
+        return {
+          bg: 'bg-neon-900 border-neon-700',
+          text: 'text-neon-300',
+          icon: CheckCircle,
+          iconColor: 'text-neon-400'
+        };
       case 'Weak':
-        return { color: 'warning', icon: <WarningIcon /> };
+        return {
+          bg: 'bg-yellow-900 border-yellow-700',
+          text: 'text-yellow-300',
+          icon: AlertTriangle,
+          iconColor: 'text-yellow-400'
+        };
       case 'Missing':
-        return { color: 'error', icon: <CancelIcon /> };
+        return {
+          bg: 'bg-red-900 border-red-700',
+          text: 'text-red-300',
+          icon: X,
+          iconColor: 'text-red-400'
+        };
       default:
-        return { color: 'default', icon: null };
+        return {
+          bg: 'bg-dark-800 border-dark-600',
+          text: 'text-gray-300',
+          icon: Target,
+          iconColor: 'text-gray-400'
+        };
     }
   };
 
-  // Filter keywords based on selected cluster and search term
-  const getFilteredKeywords = () => {
-    if (!currentKeywordInsights) return [];
+  // Helper function to get coverage-based styling
+  const getCoverageStyling = (coverage) => {
+    switch (coverage) {
+      case 'Full':
+        return 'bg-neon-500';
+      case 'Partial':
+        return 'bg-yellow-500';
+      case 'None':
+        return 'bg-red-500';
+      default:
+        return 'bg-gray-500';
+    }
+  };
 
+  // Filter keywords based on cluster and search term
+  const getFilteredKeywords = () => {
+    if (!currentKeywordInsights?.keywords) return [];
+    
     return currentKeywordInsights.keywords.filter(keyword => {
       const matchesCluster = selectedCluster === 'All' || keyword.cluster === selectedCluster;
       const matchesSearch = searchTerm === '' || keyword.word.toLowerCase().includes(searchTerm.toLowerCase());
@@ -248,498 +187,498 @@ const KeywordInsightsPage = () => {
     });
   };
 
-  // Prepare chart data
-  const prepareCoverageChartData = () => {
-    if (!currentKeywordInsights) return null;
-    
-    const coverageColors = {
-      'Full': 'rgba(76, 175, 80, 0.7)',    // Green
-      'Partial': 'rgba(255, 152, 0, 0.7)', // Orange
-      'None': 'rgba(244, 67, 54, 0.7)'     // Red
-    };
-    
-    const clusters = currentKeywordInsights.clusters;
-    const coverageLabels = clusters.map(cluster => cluster);
-    const coverageData = clusters.map(cluster => {
-      const status = currentKeywordInsights.coverage[cluster];
-      return {
-        label: cluster,
-        value: status === 'Full' ? 100 : status === 'Partial' ? 50 : 0,
-        status: status
-      };
-    });
-    
-    const data = {
-      labels: coverageLabels,
-      datasets: [{
-        data: coverageData.map(item => item.value),
-        backgroundColor: coverageData.map(item => coverageColors[item.status]),
-        borderWidth: 1
-      }]
-    };
-    
-    const options = {
-      responsive: true,
-      plugins: {
-        legend: {
-          position: 'right',
-          labels: {
-            generateLabels: (chart) => {
-              const data = chart.data;
-              if (data.labels.length && data.datasets.length) {
-                return data.labels.map((label, i) => {
-                  const status = coverageData[i].status;
-                  return {
-                    text: `${label} (${status})`,
-                    fillStyle: coverageColors[status],
-                    index: i
-                  };
-                });
-              }
-              return [];
-            }
-          }
-        },
-        tooltip: {
-          callbacks: {
-            label: (context) => {
-              const label = context.label || '';
-              const value = coverageData[context.dataIndex].status;
-              return `${label}: ${value}`;
-            }
-          }
-        }
-      }
-    };
-    
-    return { data, options };
-  };
-
+  // Prepare chart data for keyword strength distribution
   const prepareKeywordStrengthChart = () => {
-    if (!currentKeywordInsights) return null;
-    
-    // Count keyword strengths
-    const strengthCounts = {
-      'Strong': 0,
-      'Weak': 0,
-      'Missing': 0
-    };
-    
-    currentKeywordInsights.keywords.forEach(keyword => {
-      if (strengthCounts[keyword.strength] !== undefined) {
-        strengthCounts[keyword.strength]++;
-      }
-    });
-    
-    const data = {
-      labels: Object.keys(strengthCounts),
+    if (!currentKeywordInsights?.keywords) return null;
+
+    const counts = currentKeywordInsights.keywords.reduce((acc, keyword) => {
+      acc[keyword.strength] = (acc[keyword.strength] || 0) + 1;
+      return acc;
+    }, {});
+
+    return {
+      labels: ['Strong', 'Weak', 'Missing'],
       datasets: [{
         label: 'Keyword Count',
-        data: Object.values(strengthCounts),
+        data: [
+          counts.Strong || 0,
+          counts.Weak || 0,
+          counts.Missing || 0
+        ],
         backgroundColor: [
-          'rgba(76, 175, 80, 0.7)',  // Green for Strong
-          'rgba(255, 152, 0, 0.7)',  // Orange for Weak
-          'rgba(244, 67, 54, 0.7)'   // Red for Missing
+          'rgba(16, 185, 129, 0.8)', // neon-500
+          'rgba(245, 158, 11, 0.8)', // yellow-500
+          'rgba(239, 68, 68, 0.8)'   // red-500
         ],
         borderColor: [
-          'rgba(76, 175, 80, 1)',
-          'rgba(255, 152, 0, 1)',
-          'rgba(244, 67, 54, 1)'
+          'rgba(16, 185, 129, 1)', // neon-500
+          'rgba(245, 158, 11, 1)', // yellow-500
+          'rgba(239, 68, 68, 1)'   // red-500
         ],
-        borderWidth: 1
+        borderWidth: 2,
+        borderRadius: 4
       }]
     };
+  };
+
+  // Prepare chart data for skill category coverage
+  const prepareCoverageChartData = () => {
+    if (!currentKeywordInsights?.clusters || !currentKeywordInsights?.coverage) return null;
+
+    const clusters = currentKeywordInsights.clusters;
+    const coverage = currentKeywordInsights.coverage;
     
-    const options = {
-      responsive: true,
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: {
-            precision: 0
-          }
+    const coverageData = clusters.map(cluster => ({
+      cluster,
+      coverage: coverage[cluster] || 'None'
+    }));
+
+    const coverageColors = {
+      'Full': 'rgba(16, 185, 129, 0.8)',   // neon-500
+      'Partial': 'rgba(245, 158, 11, 0.8)', // yellow-500
+      'None': 'rgba(239, 68, 68, 0.8)'      // red-500
+    };
+
+    return {
+      labels: coverageData.map(item => item.cluster),
+      datasets: [{
+        data: coverageData.map(item => {
+          return item.coverage === 'Full' ? 100 : 
+                 item.coverage === 'Partial' ? 50 : 0;
+        }),
+        backgroundColor: coverageData.map(item => coverageColors[item.coverage]),
+        borderColor: coverageData.map(item => coverageColors[item.coverage].replace('0.8', '1')),
+        borderWidth: 2
+      }]
+    };
+  };
+
+  // Calculate statistics
+  const getStatistics = () => {
+    if (!currentKeywordInsights?.keywords) return null;
+
+    const total = currentKeywordInsights.keywords.length;
+    const counts = currentKeywordInsights.keywords.reduce((acc, keyword) => {
+      acc[keyword.strength] = (acc[keyword.strength] || 0) + 1;
+      return acc;
+    }, {});
+
+    const strong = counts.Strong || 0;
+    const weak = counts.Weak || 0;
+    const missing = counts.Missing || 0;
+    const strongPercentage = total > 0 ? Math.round((strong / total) * 100) : 0;
+
+    return { total, strong, weak, missing, strongPercentage };
+  };
+
+  const stats = getStatistics();
+  const filteredKeywords = getFilteredKeywords();
+  const strengthChartData = prepareKeywordStrengthChart();
+  const coverageChartData = prepareCoverageChartData();
+
+  // Chart options
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: {
+          color: '#d1d5db', // gray-300
+          font: {
+            size: 12
+          },
+          padding: 20
         }
       },
-      plugins: {
-        legend: {
-          display: false
+      tooltip: {
+        backgroundColor: 'rgba(17, 24, 39, 0.95)', // dark-900
+        titleColor: '#10b981', // neon-500
+        bodyColor: '#d1d5db', // gray-300
+        borderColor: '#374151', // dark-700
+        borderWidth: 1
+      }
+    },
+    scales: strengthChartData ? {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          color: '#9ca3af' // gray-400
         },
-        title: {
-          display: true,
-          text: 'Keyword Strength Distribution'
+        grid: {
+          color: 'rgba(55, 65, 81, 0.3)' // dark-700 with opacity
+        }
+      },
+      x: {
+        ticks: {
+          color: '#9ca3af' // gray-400
+        },
+        grid: {
+          color: 'rgba(55, 65, 81, 0.3)' // dark-700 with opacity
         }
       }
-    };
-    
-    return { data, options };
+    } : {}
   };
 
-  // Calculate summary statistics
-  const calculateStats = () => {
-    if (!currentKeywordInsights) return {};
-    
-    const keywords = currentKeywordInsights.keywords;
-    const total = keywords.length;
-    const strong = keywords.filter(k => k.strength === 'Strong').length;
-    const weak = keywords.filter(k => k.strength === 'Weak').length;
-    const missing = keywords.filter(k => k.strength === 'Missing').length;
-    
-    const strongPercent = Math.round((strong / total) * 100);
-    const weakPercent = Math.round((weak / total) * 100);
-    const missingPercent = Math.round((missing / total) * 100);
-    
-    return {
-      total,
-      strong,
-      weak,
-      missing,
-      strongPercent,
-      weakPercent,
-      missingPercent
-    };
-  };
+  // Loading state
+  if (loading) {
+    return (
+      <div className="page-container">
+        <div className="content-container">
+          <div className="flex justify-center items-center min-h-[60vh]">
+            <div className="text-center">
+              <div className="loading-spinner w-16 h-16 mx-auto mb-4"></div>
+              <p className="text-gray-400">Analyzing keywords and insights...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  const stats = calculateStats();
-  const coverageChartData = prepareCoverageChartData();
-  const strengthChartData = prepareKeywordStrengthChart();
-  const filteredKeywords = getFilteredKeywords();
+  // Error state
+  if (error) {
+    return (
+      <div className="page-container">
+        <div className="content-container">
+          <div className="card p-8 text-center">
+            <X className="w-16 h-16 text-red-400 mx-auto mb-4" />
+            <h2 className="text-2xl font-semibold text-white mb-4">Analysis Error</h2>
+            <p className="text-gray-400 mb-6">{error}</p>
+            <button 
+              onClick={() => navigate('/match-results')}
+              className="btn-secondary"
+            >
+              <ArrowLeft className="w-5 h-5 mr-2" />
+              Back to Match Results
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // No data state
+  if (!currentKeywordInsights) {
+    return (
+      <div className="page-container">
+        <div className="content-container">
+          <div className="card p-8 text-center">
+            <Target className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h2 className="text-2xl font-semibold text-white mb-4">No Keyword Insights</h2>
+            <p className="text-gray-400 mb-6">
+              We couldn't find keyword insights for this match. Please ensure you have completed the resume parsing and job matching process.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button 
+                onClick={() => navigate('/match-results')}
+                className="btn-secondary"
+              >
+                <ArrowLeft className="w-5 h-5 mr-2" />
+                Back to Match Results
+              </button>
+              <button 
+                onClick={() => navigate('/resume')}
+                className="btn-primary"
+              >
+                Start Over
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const tabs = [
+    { id: 0, label: 'Overview', icon: Activity },
+    { id: 1, label: 'Skill Categories', icon: Target },
+    { id: 2, label: 'Keywords Detail', icon: TrendingUp }
+  ];
 
   return (
-    <Container maxWidth="lg">
-      <Box sx={{ mb: 4 }}>
-        <ProcessStepper activeStep={3} />
-      </Box>
-      
-      <Typography variant="h4" component="h1" gutterBottom align="center" sx={{ mb: 4 }}>
-        Advanced Keyword Insights
-      </Typography>
+    <div className="page-container">
+      <div className="content-container">
+        {/* Process Stepper */}
+        <div className="mb-8">
+          <ProcessStepper activeStep={3} />
+        </div>
 
-      {loading && (
-        <Box display="flex" justifyContent="center" my={4}>
-          <CircularProgress />
-        </Box>
-      )}
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-white mb-4">
+            Keyword <span className="text-gradient">Insights</span>
+          </h1>
+          <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+            Detailed analysis of how your resume matches the job requirements
+          </p>
+        </div>
 
-      {error && (
-        <Alert severity="error" sx={{ mb: 4 }}>
-          {error}
-        </Alert>
-      )}
+        {/* Stats Summary */}
+        {stats && (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div className="card p-6 text-center">
+              <div className="text-3xl font-bold text-white mb-2">{stats.total}</div>
+              <div className="text-gray-400">Total Keywords</div>
+            </div>
+            <div className="card p-6 text-center">
+              <div className="text-3xl font-bold text-neon-400 mb-2">{stats.strong}</div>
+              <div className="text-gray-400">Strong Matches</div>
+            </div>
+            <div className="card p-6 text-center">
+              <div className="text-3xl font-bold text-yellow-400 mb-2">{stats.weak}</div>
+              <div className="text-gray-400">Weak Matches</div>
+            </div>
+            <div className="card p-6 text-center">
+              <div className="text-3xl font-bold text-red-400 mb-2">{stats.missing}</div>
+              <div className="text-gray-400">Missing Keywords</div>
+            </div>
+          </div>
+        )}
 
-      {currentKeywordInsights && (
-        <>
-          {/* Tabs Navigation */}
-          <Paper sx={{ mb: 4 }}>
-            <Tabs 
-              value={tabValue} 
-              onChange={handleTabChange} 
-              variant="fullWidth"
-              indicatorColor="primary"
-              textColor="primary"
-              aria-label="keyword insights tabs"
-            >
-              <Tab label="Overview" icon={<CheckIcon />} iconPosition="start" />
-              <Tab label="Skill Categories" icon={<WarningIcon />} iconPosition="start" />
-              <Tab label="Keywords Detail" icon={<CancelIcon />} iconPosition="start" />
-            </Tabs>
-            
+        {/* Alert based on performance */}
+        {stats && (
+          <div className={`p-4 rounded-lg border mb-8 ${
+            stats.strongPercentage >= 70 
+              ? 'bg-neon-900 border-neon-700 text-neon-300'
+              : stats.strongPercentage >= 50
+              ? 'bg-yellow-900 border-yellow-700 text-yellow-300'
+              : 'bg-red-900 border-red-700 text-red-300'
+          }`}>
+            <div className="flex items-center">
+              {stats.strongPercentage >= 70 ? (
+                <CheckCircle className="w-5 h-5 mr-3 text-neon-400" />
+              ) : stats.strongPercentage >= 50 ? (
+                <AlertTriangle className="w-5 h-5 mr-3 text-yellow-400" />
+              ) : (
+                <X className="w-5 h-5 mr-3 text-red-400" />
+              )}
+              <div>
+                <div className="font-semibold">
+                  {stats.strongPercentage >= 70 
+                    ? 'Excellent Match!' 
+                    : stats.strongPercentage >= 50 
+                    ? 'Good Match' 
+                    : 'Needs Improvement'}
+                </div>
+                <div className="text-sm opacity-90">
+                  {stats.strongPercentage}% of keywords are strong matches. 
+                  {stats.strongPercentage < 70 && ' Consider improving weak and missing keywords.'}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tabs Navigation */}
+        <div className="card p-0 mb-8">
+          <div className="tab-list">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setTabValue(tab.id)}
+                  className={`tab flex items-center ${tabValue === tab.id ? 'tab-active' : ''}`}
+                >
+                  <Icon className="w-4 h-4 mr-2" />
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Tab Content */}
+          <div className="p-8">
             {/* Overview Tab */}
             <TabPanel value={tabValue} index={0}>
-              <Grid container spacing={4}>
-                {/* Summary Stats */}
-                <Grid item xs={12} md={6}>
-                  <Card elevation={3}>
-                    <CardContent>
-                      <Typography variant="h6" gutterBottom>
-                        Keyword Match Summary
-                      </Typography>
-                      <Divider sx={{ mb: 2 }} />
-                      
-                      <Grid container spacing={3}>
-                        <Grid item xs={12}>
-                          <Typography variant="body2" color="text.secondary">
-                            Total Keywords: <strong>{stats.total}</strong>
-                          </Typography>
-                        </Grid>
-                        
-                        <Grid item xs={4}>
-                          <Box sx={{ textAlign: 'center', p: 1, borderRadius: 1, bgcolor: 'success.light' }}>
-                            <Typography variant="h5" color="success.dark">
-                              {stats.strongPercent}%
-                            </Typography>
-                            <Typography variant="body2" color="success.dark">
-                              Strong ({stats.strong})
-                            </Typography>
-                          </Box>
-                        </Grid>
-                        
-                        <Grid item xs={4}>
-                          <Box sx={{ textAlign: 'center', p: 1, borderRadius: 1, bgcolor: 'warning.light' }}>
-                            <Typography variant="h5" color="warning.dark">
-                              {stats.weakPercent}%
-                            </Typography>
-                            <Typography variant="body2" color="warning.dark">
-                              Weak ({stats.weak})
-                            </Typography>
-                          </Box>
-                        </Grid>
-                        
-                        <Grid item xs={4}>
-                          <Box sx={{ textAlign: 'center', p: 1, borderRadius: 1, bgcolor: 'error.light' }}>
-                            <Typography variant="h5" color="error.dark">
-                              {stats.missingPercent}%
-                            </Typography>
-                            <Typography variant="body2" color="error.dark">
-                              Missing ({stats.missing})
-                            </Typography>
-                          </Box>
-                        </Grid>
-                      </Grid>
-                      
-                      <Box sx={{ mt: 3 }}>
-                        <Typography variant="body2" paragraph>
-                          Your resume matches <strong>{stats.strongPercent}%</strong> of keywords strongly and <strong>{stats.weakPercent}%</strong> weakly. <strong>{stats.missingPercent}%</strong> of keywords are missing.
-                        </Typography>
-                        <Alert severity={stats.strongPercent > 60 ? "success" : stats.strongPercent > 30 ? "warning" : "error"} sx={{ mt: 1 }}>
-                          {stats.strongPercent > 60 
-                            ? "Great job! Your resume has strong keyword alignment with this job description." 
-                            : stats.strongPercent > 30 
-                              ? "Your resume matches some keywords, but there's room for improvement." 
-                              : "Consider updating your resume to better match the job description keywords."}
-                        </Alert>
-                      </Box>
-                    </CardContent>
-                  </Card>
-                </Grid>
+              <div className="space-y-8">
+                <div className="text-center">
+                  <h2 className="text-2xl font-semibold text-white mb-4">Keyword Strength Distribution</h2>
+                  <p className="text-gray-400 mb-6">Distribution of keyword matches across different strength levels</p>
+                </div>
                 
-                {/* Strength Distribution Chart */}
-                <Grid item xs={12} md={6}>
-                  <Card elevation={3}>
-                    <CardContent>
-                      <Typography variant="h6" gutterBottom>
-                        Keyword Strength Distribution
-                      </Typography>
-                      <Divider sx={{ mb: 2 }} />
-                      
-                      <Box sx={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        {strengthChartData && <Bar data={strengthChartData.data} options={strengthChartData.options} />}
-                      </Box>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              </Grid>
+                {strengthChartData && (
+                  <div className="chart-container">
+                    <div className="h-80">
+                      <Bar data={strengthChartData} options={chartOptions} />
+                    </div>
+                  </div>
+                )}
+              </div>
             </TabPanel>
-            
+
             {/* Skill Categories Tab */}
             <TabPanel value={tabValue} index={1}>
-              <Grid container spacing={4}>
-                {/* Coverage Chart */}
-                <Grid item xs={12} md={7}>
-                  <Card elevation={3}>
-                    <CardContent>
-                      <Typography variant="h6" gutterBottom>
-                        Skill Category Coverage
-                      </Typography>
-                      <Divider sx={{ mb: 2 }} />
+              <div className="space-y-8">
+                <div className="text-center">
+                  <h2 className="text-2xl font-semibold text-white mb-4">Skill Category Coverage</h2>
+                  <p className="text-gray-400 mb-6">Coverage analysis across different skill categories</p>
+                </div>
+
+                <div className="grid lg:grid-cols-2 gap-8">
+                  {/* Doughnut Chart */}
+                  {coverageChartData && (
+                    <div className="chart-container">
+                      <div className="h-80">
+                        <Doughnut data={coverageChartData} options={chartOptions} />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Category Details */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-white mb-4">Category Details</h3>
+                    {currentKeywordInsights?.clusters?.map((cluster) => {
+                      const coverage = currentKeywordInsights.coverage?.[cluster] || 'None';
+                      const styling = getCoverageStyling(coverage);
                       
-                      <Box sx={{ height: 400, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        {coverageChartData && <Doughnut data={coverageChartData.data} options={coverageChartData.options} />}
-                      </Box>
-                    </CardContent>
-                  </Card>
-                </Grid>
-                
-                {/* Category Details */}
-                <Grid item xs={12} md={5}>
-                  <Card elevation={3}>
-                    <CardContent>
-                      <Typography variant="h6" gutterBottom>
-                        Category Details
-                      </Typography>
-                      <Divider sx={{ mb: 2 }} />
-                      
-                      <Stack spacing={2}>
-                        {currentKeywordInsights.clusters.map((cluster) => {
-                          const coverageStatus = currentKeywordInsights.coverage[cluster];
-                          const { color, icon } = (() => {
-                            switch (coverageStatus) {
-                              case 'Full': return { color: 'success', icon: <CheckIcon /> };
-                              case 'Partial': return { color: 'warning', icon: <WarningIcon /> };
-                              case 'None': return { color: 'error', icon: <CancelIcon /> };
-                              default: return { color: 'default', icon: null };
-                            }
-                          })();
-                          
-                          // Count keywords in this cluster
-                          const clusterKeywords = currentKeywordInsights.keywords.filter(k => k.cluster === cluster);
-                          const totalInCluster = clusterKeywords.length;
-                          const strongInCluster = clusterKeywords.filter(k => k.strength === 'Strong').length;
-                          const weakInCluster = clusterKeywords.filter(k => k.strength === 'Weak').length;
-                          const missingInCluster = clusterKeywords.filter(k => k.strength === 'Missing').length;
-                          
-                          return (
-                            <Card key={cluster} variant="outlined" sx={{ p: 1 }}>
-                              <Grid container alignItems="center">
-                                <Grid item xs={9}>
-                                  <Typography variant="subtitle1" fontWeight="bold">
-                                    {cluster}
-                                  </Typography>
-                                  <Chip 
-                                    label={coverageStatus} 
-                                    color={color} 
-                                    icon={icon}
-                                    size="small"
-                                    sx={{ mt: 0.5 }}
-                                  />
-                                </Grid>
-                                <Grid item xs={3}>
-                                  <Box sx={{ textAlign: 'right' }}>
-                                    <Typography variant="caption" display="block" color="text.secondary">
-                                      Total: {totalInCluster}
-                                    </Typography>
-                                    <Typography variant="caption" display="block" color="success.main">
-                                      Strong: {strongInCluster}
-                                    </Typography>
-                                    <Typography variant="caption" display="block" color="warning.main">
-                                      Weak: {weakInCluster}
-                                    </Typography>
-                                    <Typography variant="caption" display="block" color="error.main">
-                                      Missing: {missingInCluster}
-                                    </Typography>
-                                  </Box>
-                                </Grid>
-                              </Grid>
-                            </Card>
-                          );
-                        })}
-                      </Stack>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              </Grid>
+                      return (
+                        <div key={cluster} className="card p-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                              <div className={`w-4 h-4 rounded-full ${styling}`}></div>
+                              <span className="font-medium text-white">{cluster}</span>
+                            </div>
+                            <span className={`badge ${
+                              coverage === 'Full' ? 'badge-success' :
+                              coverage === 'Partial' ? 'badge-warning' : 
+                              'badge-error'
+                            }`}>
+                              {coverage}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
             </TabPanel>
-            
+
             {/* Keywords Detail Tab */}
             <TabPanel value={tabValue} index={2}>
-              <Box sx={{ mb: 3, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
-                <FormControl sx={{ minWidth: 200 }}>
-                  <InputLabel id="cluster-select-label">Filter by Category</InputLabel>
-                  <Select
-                    labelId="cluster-select-label"
-                    value={selectedCluster}
-                    label="Filter by Category"
-                    onChange={handleClusterChange}
-                    startAdornment={<FilterIcon sx={{ mr: 1, color: 'action.active' }} />}
-                  >
-                    <MenuItem value="All">All Categories</MenuItem>
-                    {currentKeywordInsights.clusters.map((cluster) => (
-                      <MenuItem value={cluster} key={cluster}>{cluster}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-                
-                <TextField
-                  label="Search Keywords"
-                  variant="outlined"
-                  value={searchTerm}
-                  onChange={handleSearchChange}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <SearchIcon />
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{ flexGrow: 1 }}
-                />
-              </Box>
-              
-              {filteredKeywords.length === 0 && (
-                <Alert severity="info">No keywords match your current filters.</Alert>
-              )}
-              
-              <Grid container spacing={2}>
-                {filteredKeywords.map((keyword, index) => {
-                  const { color, icon } = getStrengthColor(keyword.strength);
-                  
-                  return (
-                    <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
-                      <Card 
-                        variant="outlined"
-                        sx={{
-                          borderLeft: 5,
-                          borderColor: `${color}.main`,
-                          transition: 'transform 0.2s',
-                          '&:hover': {
-                            transform: 'translateY(-2px)',
-                            boxShadow: 2
-                          }
-                        }}
-                      >
-                        <CardContent>
-                          <Tooltip title={`This keyword appears ${keyword.resumeCount} times in your resume and ${keyword.jdCount} times in the job description`} arrow>
-                            <Box>
-                              <Typography variant="subtitle2" fontWeight="bold" noWrap>
-                                {keyword.word}
-                              </Typography>
-                              <Typography variant="caption" display="block" color="text.secondary">
-                                {keyword.cluster}
-                              </Typography>
-                              <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <Chip 
-                                  label={keyword.strength} 
-                                  color={color} 
-                                  icon={icon}
-                                  size="small"
-                                />
-                                <Typography variant="caption">
-                                  {keyword.resumeCount} / {keyword.jdCount}
-                                </Typography>
-                              </Box>
-                            </Box>
-                          </Tooltip>
-                        </CardContent>
-                      </Card>
-                    </Grid>
-                  );
-                })}
-              </Grid>
-            </TabPanel>
-          </Paper>
+              <div className="space-y-6">
+                {/* Filters */}
+                <div className="flex flex-col sm:flex-row gap-4">
+                  {/* Cluster Filter */}
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      <Filter className="w-4 h-4 inline mr-2" />
+                      Filter by Category
+                    </label>
+                    <select
+                      value={selectedCluster}
+                      onChange={(e) => setSelectedCluster(e.target.value)}
+                      className="input-primary w-full"
+                    >
+                      <option value="All">All Categories</option>
+                      {currentKeywordInsights?.clusters?.map((cluster) => (
+                        <option key={cluster} value={cluster}>
+                          {cluster}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-          <Stack direction="row" spacing={2} justifyContent="center" sx={{ mt: 4 }}>
-            <Button
-              variant="outlined"
-              onClick={handleBack}
-              sx={{ 
-                borderRadius: 8,
-                px: 4,
-                py: 1.5,
-                borderWidth: 2,
-                borderColor: 'primary.main',
-                color: 'primary.main',
-                fontWeight: 'medium',
-              }}
-            >
-              Back to Match Results
-            </Button>
-            <Button
-              variant="contained"
-              onClick={handleContinue}
-              sx={{ 
-                borderRadius: 8,
-                px: 4,
-                py: 1.5,
-                boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
-                background: 'linear-gradient(45deg, #3f51b5 30%, #7986cb 90%)',
-              }}
-            >
-              Continue to Cover Letter
-            </Button>
-          </Stack>
-        </>
-      )}
-    </Container>
+                  {/* Search Filter */}
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      <Search className="w-4 h-4 inline mr-2" />
+                      Search Keywords
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        placeholder="Search keywords..."
+                        className="input-primary w-full pl-10"
+                      />
+                      <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Results Count */}
+                <div className="text-gray-400 text-sm">
+                  Showing {filteredKeywords.length} of {currentKeywordInsights?.keywords?.length || 0} keywords
+                </div>
+
+                {/* Keywords Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filteredKeywords.map((keyword, index) => {
+                    const styling = getStatusStyling(keyword.strength);
+                    const Icon = styling.icon;
+                    
+                    return (
+                      <div key={index} className={`card card-hover p-4 border ${styling.bg}`}>
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-center space-x-2">
+                            <Icon className={`w-5 h-5 ${styling.iconColor}`} />
+                            <span className={`font-semibold ${styling.text}`}>
+                              {keyword.word}
+                            </span>
+                          </div>
+                          <span className={`badge ${
+                            keyword.strength === 'Strong' ? 'badge-success' :
+                            keyword.strength === 'Weak' ? 'badge-warning' : 
+                            'badge-error'
+                          }`}>
+                            {keyword.strength}
+                          </span>
+                        </div>
+                        
+                        <div className="space-y-2 text-sm">
+                          <div className="flex justify-between text-gray-400">
+                            <span>Category:</span>
+                            <span className="text-gray-300">{keyword.cluster}</span>
+                          </div>
+                          <div className="flex justify-between text-gray-400">
+                            <span>Resume:</span>
+                            <span className="text-gray-300">{keyword.resumeCount || 0} times</span>
+                          </div>
+                          <div className="flex justify-between text-gray-400">
+                            <span>Job Description:</span>
+                            <span className="text-gray-300">{keyword.jdCount || 0} times</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {filteredKeywords.length === 0 && (
+                  <div className="text-center py-12">
+                    <Search className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-400 mb-2">No keywords found</h3>
+                    <p className="text-gray-500">Try adjusting your filters or search terms.</p>
+                  </div>
+                )}
+              </div>
+            </TabPanel>
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row gap-4 justify-between">
+          <button 
+            onClick={() => navigate('/match-results')}
+            className="btn-secondary"
+          >
+            <ArrowLeft className="w-5 h-5 mr-2" />
+            Back to Match Results
+          </button>
+          <button 
+            onClick={() => navigate('/cover-letter')}
+            className="btn-primary"
+          >
+            Continue to Cover Letter
+            <ArrowRight className="w-5 h-5 ml-2" />
+          </button>
+        </div>
+      </div>
+    </div>
   );
 };
 

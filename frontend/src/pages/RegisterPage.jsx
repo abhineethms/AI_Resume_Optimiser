@@ -5,24 +5,7 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '../firebase/firebaseConfig';
 import { register, clearError } from '../features/auth/authSlice';
 import GoogleAuthButton from '../components/auth/GoogleAuthButton';
-
-// Material UI imports
-import {
-  Container,
-  Typography,
-  TextField,
-  Button,
-  Box,
-  Grid,
-  Paper,
-  Divider,
-  CircularProgress,
-  Alert,
-  InputAdornment,
-  IconButton,
-  LinearProgress
-} from '@mui/material';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
+import { Eye, EyeOff, User, Mail, Lock, AlertCircle, Check } from 'lucide-react';
 
 const RegisterPage = () => {
   const dispatch = useDispatch();
@@ -108,9 +91,16 @@ const RegisterPage = () => {
   
   // Get color for password strength indicator
   const getPasswordStrengthColor = () => {
-    if (passwordStrength < 50) return 'error';
-    if (passwordStrength < 75) return 'warning';
-    return 'success';
+    if (passwordStrength < 50) return 'bg-red-500';
+    if (passwordStrength < 75) return 'bg-yellow-500';
+    return 'bg-neon-500';
+  };
+
+  // Get password strength text
+  const getPasswordStrengthText = () => {
+    if (passwordStrength < 50) return 'Weak';
+    if (passwordStrength < 75) return 'Medium';
+    return 'Strong';
   };
   
   // Toggle password visibility
@@ -175,153 +165,238 @@ const RegisterPage = () => {
   // Show loading state while checking auth
   if (firebaseLoading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
-        <CircularProgress />
-      </Box>
+      <div className="flex justify-center items-center h-screen">
+        <div className="loading-spinner w-16 h-16"></div>
+      </div>
     );
   }
   
   return (
-    <Container component="main" maxWidth="sm" sx={{ mb: 4 }}>
-      <Paper elevation={3} sx={{ borderRadius: 2, mt: 8, p: { xs: 2, md: 4 } }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <Typography component="h1" variant="h4" gutterBottom>
-            Create an Account
-          </Typography>
-          
+    <div className="min-h-screen flex items-center justify-center px-4 py-12">
+      <div className="max-w-md w-full space-y-8">
+        {/* Header */}
+        <div className="text-center">
+          <h1 className="text-4xl font-bold text-white mb-2">
+            Create Your <span className="text-gradient">Account</span>
+          </h1>
+          <p className="text-gray-400">Join us and optimize your job applications</p>
+        </div>
+
+        {/* Registration Form */}
+        <div className="card p-8">
           {error && (
-            <Alert severity="error" sx={{ width: '100%', mb: 2 }}>
-              {error}
-            </Alert>
+            <div className="mb-6 p-4 bg-red-900 border border-red-700 rounded-lg text-red-300 flex items-center fade-in">
+              <AlertCircle className="w-5 h-5 mr-3 text-red-400" />
+              <span>{error}</span>
+            </div>
           )}
           
-          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }}>
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              id="name"
-              label="Full Name"
-              name="name"
-              autoComplete="name"
-              autoFocus
-              value={name}
-              onChange={handleChange}
-              error={!!formErrors.name}
-              helperText={formErrors.name}
-              disabled={isLoading}
-            />
-            
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              id="email"
-              label="Email Address"
-              name="email"
-              autoComplete="email"
-              value={email}
-              onChange={handleChange}
-              error={!!formErrors.email}
-              helperText={formErrors.email}
-              disabled={isLoading}
-            />
-            
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              name="password"
-              label="Password"
-              type={showPassword ? 'text' : 'password'}
-              id="password"
-              autoComplete="new-password"
-              value={password}
-              onChange={handleChange}
-              error={!!formErrors.password}
-              helperText={formErrors.password || (password && 'Password must be at least 6 characters')}
-              disabled={isLoading}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label="toggle password visibility"
-                      onClick={togglePasswordVisibility}
-                      edge="end"
-                    >
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-            />
-            
-            {password && (
-              <Box sx={{ width: '100%', mb: 2 }}>
-                <LinearProgress 
-                  variant="determinate" 
-                  value={passwordStrength} 
-                  color={getPasswordStrengthColor()} 
-                  sx={{ height: 8, borderRadius: 5, my: 1 }}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Full Name Field */}
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-2">
+                Full Name
+              </label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  autoComplete="name"
+                  required
+                  autoFocus
+                  value={name}
+                  onChange={handleChange}
+                  disabled={isLoading}
+                  className={`input-primary w-full pl-10 ${
+                    formErrors.name ? 'input-error' : ''
+                  } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  placeholder="Enter your full name"
                 />
-                <Typography variant="caption" color="text.secondary">
-                  Password Strength: {passwordStrength < 50 ? 'Weak' : passwordStrength < 75 ? 'Medium' : 'Strong'}
-                </Typography>
-              </Box>
+              </div>
+              {formErrors.name && (
+                <p className="mt-2 text-red-400 text-sm flex items-center">
+                  <AlertCircle className="w-4 h-4 mr-1" />
+                  {formErrors.name}
+                </p>
+              )}
+            </div>
+
+            {/* Email Field */}
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
+                Email Address
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={email}
+                  onChange={handleChange}
+                  disabled={isLoading}
+                  className={`input-primary w-full pl-10 ${
+                    formErrors.email ? 'input-error' : ''
+                  } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  placeholder="Enter your email"
+                />
+              </div>
+              {formErrors.email && (
+                <p className="mt-2 text-red-400 text-sm flex items-center">
+                  <AlertCircle className="w-4 h-4 mr-1" />
+                  {formErrors.email}
+                </p>
+              )}
+            </div>
+
+            {/* Password Field */}
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
+                Password
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}
+                  autoComplete="new-password"
+                  required
+                  value={password}
+                  onChange={handleChange}
+                  disabled={isLoading}
+                  className={`input-primary w-full pl-10 pr-10 ${
+                    formErrors.password ? 'input-error' : ''
+                  } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  placeholder="Create a password"
+                />
+                <button
+                  type="button"
+                  onClick={togglePasswordVisibility}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+              {formErrors.password && (
+                <p className="mt-2 text-red-400 text-sm flex items-center">
+                  <AlertCircle className="w-4 h-4 mr-1" />
+                  {formErrors.password}
+                </p>
+              )}
+              {password && !formErrors.password && (
+                <p className="mt-2 text-gray-400 text-sm">
+                  Password must be at least 6 characters
+                </p>
+              )}
+            </div>
+
+            {/* Password Strength Indicator */}
+            {password && (
+              <div className="space-y-2">
+                <div className="w-full bg-dark-700 rounded-full h-2">
+                  <div
+                    className={`h-2 rounded-full transition-all duration-300 ${getPasswordStrengthColor()}`}
+                    style={{ width: `${passwordStrength}%` }}
+                  ></div>
+                </div>
+                <p className="text-sm text-gray-400">
+                  Password Strength: <span className={`font-medium ${
+                    passwordStrength < 50 ? 'text-red-400' : 
+                    passwordStrength < 75 ? 'text-yellow-400' : 'text-neon-400'
+                  }`}>
+                    {getPasswordStrengthText()}
+                  </span>
+                </p>
+              </div>
             )}
-            
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              name="confirmPassword"
-              label="Confirm Password"
-              type={showPassword ? 'text' : 'password'}
-              id="confirmPassword"
-              autoComplete="new-password"
-              value={confirmPassword}
-              onChange={handleChange}
-              error={!!formErrors.confirmPassword}
-              helperText={formErrors.confirmPassword}
-              disabled={isLoading}
-            />
-            
-            <Button
+
+            {/* Confirm Password Field */}
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300 mb-2">
+                Confirm Password
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type={showPassword ? 'text' : 'password'}
+                  autoComplete="new-password"
+                  required
+                  value={confirmPassword}
+                  onChange={handleChange}
+                  disabled={isLoading}
+                  className={`input-primary w-full pl-10 ${
+                    formErrors.confirmPassword ? 'input-error' : ''
+                  } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  placeholder="Confirm your password"
+                />
+                {confirmPassword && password === confirmPassword && (
+                  <Check className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-neon-400" />
+                )}
+              </div>
+              {formErrors.confirmPassword && (
+                <p className="mt-2 text-red-400 text-sm flex items-center">
+                  <AlertCircle className="w-4 h-4 mr-1" />
+                  {formErrors.confirmPassword}
+                </p>
+              )}
+            </div>
+
+            {/* Submit Button */}
+            <button
               type="submit"
-              fullWidth
-              variant="contained"
               disabled={isLoading}
-              sx={{ mt: 3, mb: 2, py: 1.2 }}
+              className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             >
-              {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Sign Up'}
-            </Button>
-            
-            <Divider sx={{ my: 2 }}>
-              <Typography variant="body2" color="text.secondary">
-                OR
-              </Typography>
-            </Divider>
-            
+              {isLoading ? (
+                <>
+                  <div className="loading-spinner w-5 h-5 mr-2"></div>
+                  Creating Account...
+                </>
+              ) : (
+                'Create Account'
+              )}
+            </button>
+
+            {/* Divider */}
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-dark-700"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-4 bg-dark-900 text-gray-400">OR</span>
+              </div>
+            </div>
+
+            {/* Google Auth Button */}
             <GoogleAuthButton
               onSuccess={handleGoogleSuccess}
               onError={handleGoogleError}
               buttonText="Sign up with Google"
             />
-            
-            <Grid container justifyContent="center" sx={{ mt: 3 }}>
-              <Grid item>
-                <Typography variant="body2">
-                  Already have an account?{' '}
-                  <Link to="/login" style={{ textDecoration: 'none', fontWeight: 'bold' }}>
-                    Sign In
-                  </Link>
-                </Typography>
-              </Grid>
-            </Grid>
-          </Box>
-        </Box>
-      </Paper>
-    </Container>
+
+            {/* Sign In Link */}
+            <div className="text-center">
+              <p className="text-gray-400">
+                Already have an account?{' '}
+                <Link
+                  to="/login"
+                  className="text-neon-400 hover:text-neon-300 font-semibold transition-colors duration-200"
+                >
+                  Sign In
+                </Link>
+              </p>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
   );
 };
 

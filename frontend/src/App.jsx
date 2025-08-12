@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
-import { Container, Box, CircularProgress } from '@mui/material';
 import { useDispatch } from 'react-redux';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from './firebase/firebaseConfig';
@@ -10,7 +9,7 @@ import sessionManager from './utils/sessionManager';
 
 // Layout components
 import Header from './components/layout/Header';
-// import Footer from './components/layout/Footer';
+import Footer from './components/layout/Footer';
 
 // Auth components
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -120,15 +119,15 @@ const App = () => {
   const getContainer = (element) => {
     if (isHomePage) {
       return (
-        <Box component="main" sx={{ mt: 0, mb: 8, minHeight: '80vh', width: '100%' }}>
+        <main className="mt-0 mb-8 min-h-[80vh] w-full">
           {element}
-        </Box>
+        </main>
       );
     } else {
       return (
-        <Container component="main" sx={{ mt: 8, mb: 8, minHeight: '80vh' }}>
+        <main className="content-container mt-20 mb-8 min-h-[80vh]">
           {element}
-        </Container>
+        </main>
       );
     }
   };
@@ -136,14 +135,14 @@ const App = () => {
   // Show loading indicator while Firebase auth is initializing
   if (initializing) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <CircularProgress size={60} />
-      </Box>
+      <div className="flex justify-center items-center h-screen">
+        <div className="loading-spinner w-16 h-16"></div>
+      </div>
     );
   }
   
   return (
-    <>
+    <div className="min-h-screen flex flex-col bg-dark-950">
       <Header />
       <Routes>
         {/* Public routes */}
@@ -167,8 +166,8 @@ const App = () => {
         {/* Catch-all route */}
         <Route path="*" element={getContainer(<NotFoundPage />)} />
       </Routes>
-      {/* <Footer /> */}
-    </>
+      <Footer />
+    </div>
   );
 };
 
