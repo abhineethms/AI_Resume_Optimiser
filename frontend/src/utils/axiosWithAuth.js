@@ -15,10 +15,17 @@ axiosWithAuth.interceptors.request.use(
   async (config) => {
     try {
       // Get the current user from Firebase Auth
-      const user = auth.currentUser;
+      let user = auth.currentUser;
+      
+      // If no current user, wait a bit for Firebase Auth to initialize
+      if (!user) {
+        console.log('No current user, waiting for Firebase Auth...');
+        await new Promise(resolve => setTimeout(resolve, 100));
+        user = auth.currentUser;
+      }
       
       // Log for debugging
-      console.log('axiosWithAuth interceptor - user:', user ? 'Authenticated' : 'Not authenticated');
+      console.log('axiosWithAuth interceptor - user:', user ? `Authenticated (${user.email})` : 'Not authenticated');
       
       // If user is authenticated, get a fresh token and add to headers
       if (user) {
@@ -30,8 +37,11 @@ axiosWithAuth.interceptors.request.use(
         // Set the Authorization header with Bearer prefix
         config.headers.Authorization = `Bearer ${token}`;
         
-        // Log the full headers for debugging
-        console.log('Request headers:', JSON.stringify(config.headers));
+        // Remove any session ID headers since we're authenticated
+        delete config.headers['X-Session-ID'];
+        
+        // Log the authentication method
+        console.log('Request authenticated with Firebase token');
       } else {
         // For guest users, ensure we have a session and add session ID to headers
         let sessionData = sessionManager.getSessionData();

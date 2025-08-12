@@ -2,6 +2,7 @@ const path = require('path');
 const pdfParse = require('pdf-parse');
 const mammoth = require('mammoth');
 const JobDescription = require('../models/JobDescription');
+const User = require('../models/User');
 const openai = require('../config/openai');
 const { uploadToS3 } = require('../utils/s3Utils');
 
@@ -100,6 +101,14 @@ const parseJobDescription = async (req, res) => {
 
     // Save the job description to the database
     await jobDescription.save();
+
+    // Update user's jobs array if user is authenticated
+    if (req.user?._id) {
+      await User.findByIdAndUpdate(
+        req.user._id,
+        { $addToSet: { jobs: jobDescription._id } }
+      );
+    }
 
     // Return the structured job description data
     res.status(200).json({

@@ -1,6 +1,7 @@
 const Resume = require('../models/Resume');
 const JobDescription = require('../models/JobDescription');
 const Match = require('../models/Match');
+const User = require('../models/User');
 const openai = require('../config/openai');
 
 /**
@@ -48,6 +49,14 @@ const compareResumeWithJob = async (req, res) => {
 
     // Save the match to the database
     await match.save();
+
+    // Update user's matches array if user is authenticated
+    if (req.user?._id) {
+      await User.findByIdAndUpdate(
+        req.user._id,
+        { $addToSet: { matches: match._id } }
+      );
+    }
 
     // Return the comparison results
     res.status(200).json({

@@ -2,6 +2,7 @@ const path = require('path');
 const pdfParse = require('pdf-parse');
 const mammoth = require('mammoth');
 const Resume = require('../models/Resume');
+const User = require('../models/User');
 const openai = require('../config/openai');
 const { uploadToS3, downloadAndExtractText } = require('../utils/s3Utils');
 
@@ -110,6 +111,16 @@ const parseResume = async (req, res) => {
       console.log('[Resume Parser] Saving resume to database');
       await resume.save();
       console.log(`[Resume Parser] Resume saved with ID: ${resume._id}`);
+
+      // Update user's resumes array if user is authenticated
+      if (req.user?._id) {
+        console.log('[Resume Parser] Updating user resumes array');
+        await User.findByIdAndUpdate(
+          req.user._id,
+          { $addToSet: { resumes: resume._id } }
+        );
+        console.log('[Resume Parser] User resumes array updated');
+      }
 
       // Return the structured resume data
       console.log('[Resume Parser] Sending successful response to client');

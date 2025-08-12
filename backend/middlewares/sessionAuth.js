@@ -180,6 +180,8 @@ const optionalAuth = asyncHandler(async (req, res, next) => {
       req.sessionType = 'user';
       req.sessionIdentifier = user?._id || newUser?._id;
       
+      return next(); // Return early for authenticated users
+      
     } catch (error) {
       console.error('Token verification failed, falling back to guest session:', error.message);
       // Fall through to guest session handling
