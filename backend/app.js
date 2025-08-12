@@ -100,10 +100,20 @@ app.use('/api/auth', authRoutes);
 app.use('/api/history', historyRoutes);
 app.use('/api/keywords', keywordRoutes);
 
-// Basic route
-app.get('/', (req, res) => {
-  res.json({ message: 'AI Resume Optimizer API is running' });
-});
+// Serve static files from React build (for production)
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../frontend/build')));
+  
+  // Handle React routing - send all non-API requests to React app
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
+  });
+} else {
+  // Basic route for development
+  app.get('/', (req, res) => {
+    res.json({ message: 'AI Resume Optimizer API is running' });
+  });
+}
 
 // Error handling middleware
 app.use(notFound);
