@@ -7,7 +7,7 @@ import sessionManager from './sessionManager';
  * attach Firebase ID tokens to outgoing requests
  */
 const axiosWithAuth = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000',
+  baseURL: process.env.REACT_APP_API_URL || '/api',
 });
 
 // Add a request interceptor to attach Firebase tokens
