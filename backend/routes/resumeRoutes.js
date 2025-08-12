@@ -4,7 +4,8 @@ const multer = require('multer');
 const path = require('path');
 
 // Import controllers
-const { parseResume } = require('../controllers/resumeController');
+const { parseResume, getUserResumes, getResumeById } = require('../controllers/resumeController');
+const { optionalAuth } = require('../middlewares/sessionAuth');
 
 // Configure multer for S3 upload (memory storage)
 const storage = multer.memoryStorage();
@@ -29,7 +30,13 @@ const upload = multer({
   }
 });
 
-// Route to parse resume
-router.post('/parse', upload.single('resume'), parseResume);
+// Route to parse resume - supports both authenticated users and guest sessions
+router.post('/parse', optionalAuth, upload.single('resume'), parseResume);
+
+// Route to get all user resumes - supports both authenticated users and guest sessions
+router.get('/', optionalAuth, getUserResumes);
+
+// Route to get specific resume by ID - supports both authenticated users and guest sessions
+router.get('/:id', optionalAuth, getResumeById);
 
 module.exports = router;

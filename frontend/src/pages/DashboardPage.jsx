@@ -30,7 +30,8 @@ import {
   Work as JobIcon,
   Compare as MatchIcon,
   Email as CoverLetterIcon,
-  Person as PersonIcon
+  Person as PersonIcon,
+  Psychology as KeywordIcon
 } from '@mui/icons-material';
 
 // Define the workflow steps for the app process
@@ -73,7 +74,7 @@ const DashboardPage = () => {
   const [user, loading] = useAuthState(auth);
   
   // Get auth state from Redux
-  const { userDetails, isLoading } = useSelector(state => state.auth);
+  const { isLoading } = useSelector(state => state.auth);
   
   // Local state for dashboard data
   const [dashboardData, setDashboardData] = useState({
@@ -81,7 +82,9 @@ const DashboardPage = () => {
     stats: {
       resumesUploaded: 0,
       jobsAnalyzed: 0,
-      coverLettersGenerated: 0
+      matchesCreated: 0,
+      coverLettersGenerated: 0,
+      keywordInsights: 0
     },
     loading: true,
     error: null
@@ -96,22 +99,25 @@ const DashboardPage = () => {
         
         // Fetch dashboard data
         const response = await axiosWithAuth.get('/api/auth/dashboard');
-        setDashboardData({
-          ...dashboardData,
-          ...response.data.data,
+        console.log('Dashboard API response:', response.data);
+        
+        setDashboardData(prevData => ({
+          ...prevData,
+          stats: response.data.data.stats || prevData.stats,
+          recentActivities: response.data.data.recentActivities || [],
           loading: false
-        });
+        }));
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
-        setDashboardData({
-          ...dashboardData,
+        setDashboardData(prevData => ({
+          ...prevData,
           loading: false,
           error: error.message || 'Failed to load dashboard data'
-        });
+        }));
       }
     };
     
-    if (user && !dashboardData.loading) {
+    if (user) {
       fetchData();
     }
   }, [user, dispatch]);
@@ -174,34 +180,87 @@ const DashboardPage = () => {
             
             {/* User Stats */}
             <Typography variant="h6" sx={{ mb: 2 }}>
-              Activity Summary
+              📊 Score Board
             </Typography>
             
             <List dense>
-              <ListItem>
+              <ListItem sx={{ px: 0 }}>
                 <ListItemIcon>
-                  <ResumeIcon />
+                  <ResumeIcon color="primary" />
                 </ListItemIcon>
                 <ListItemText 
-                  primary={`${dashboardData.stats.resumesUploaded} Resume${dashboardData.stats.resumesUploaded !== 1 ? 's' : ''} Uploaded`} 
+                  primary={
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Typography variant="body2">Resumes Parsed</Typography>
+                      <Typography variant="h6" color="primary" sx={{ fontWeight: 'bold' }}>
+                        {dashboardData.stats.resumesUploaded}
+                      </Typography>
+                    </Box>
+                  }
                 />
               </ListItem>
               
-              <ListItem>
+              <ListItem sx={{ px: 0 }}>
                 <ListItemIcon>
-                  <JobIcon />
+                  <JobIcon color="secondary" />
                 </ListItemIcon>
                 <ListItemText 
-                  primary={`${dashboardData.stats.jobsAnalyzed} Job${dashboardData.stats.jobsAnalyzed !== 1 ? 's' : ''} Analyzed`} 
+                  primary={
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Typography variant="body2">Jobs Analyzed</Typography>
+                      <Typography variant="h6" color="secondary" sx={{ fontWeight: 'bold' }}>
+                        {dashboardData.stats.jobsAnalyzed}
+                      </Typography>
+                    </Box>
+                  }
                 />
               </ListItem>
               
-              <ListItem>
+              <ListItem sx={{ px: 0 }}>
                 <ListItemIcon>
-                  <CoverLetterIcon />
+                  <MatchIcon color="success" />
                 </ListItemIcon>
                 <ListItemText 
-                  primary={`${dashboardData.stats.coverLettersGenerated} Cover Letter${dashboardData.stats.coverLettersGenerated !== 1 ? 's' : ''} Generated`} 
+                  primary={
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Typography variant="body2">Matches Created</Typography>
+                      <Typography variant="h6" color="success.main" sx={{ fontWeight: 'bold' }}>
+                        {dashboardData.stats.matchesCreated || 0}
+                      </Typography>
+                    </Box>
+                  }
+                />
+              </ListItem>
+              
+              <ListItem sx={{ px: 0 }}>
+                <ListItemIcon>
+                  <CoverLetterIcon color="info" />
+                </ListItemIcon>
+                <ListItemText 
+                  primary={
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Typography variant="body2">Cover Letters</Typography>
+                      <Typography variant="h6" color="info.main" sx={{ fontWeight: 'bold' }}>
+                        {dashboardData.stats.coverLettersGenerated}
+                      </Typography>
+                    </Box>
+                  }
+                />
+              </ListItem>
+              
+              <ListItem sx={{ px: 0 }}>
+                <ListItemIcon>
+                  <KeywordIcon color="warning" />
+                </ListItemIcon>
+                <ListItemText 
+                  primary={
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Typography variant="body2">Keyword Insights</Typography>
+                      <Typography variant="h6" color="warning.main" sx={{ fontWeight: 'bold' }}>
+                        {dashboardData.stats.keywordInsights || 0}
+                      </Typography>
+                    </Box>
+                  }
                 />
               </ListItem>
             </List>

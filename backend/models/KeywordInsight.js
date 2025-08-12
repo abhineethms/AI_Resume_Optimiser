@@ -6,6 +6,11 @@ const KeywordInsightSchema = new mongoose.Schema({
     ref: 'User',
     // Not required initially to allow non-authenticated users to use basic features
   },
+  sessionId: {
+    type: String,
+    // Used for guest users to track their data across browser sessions
+    // Either user or sessionId must be present
+  },
   resumeId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Resume',
@@ -49,7 +54,19 @@ const KeywordInsightSchema = new mongoose.Schema({
   }
 });
 
+// Add compound index for efficient queries by user or session
+KeywordInsightSchema.index({ user: 1 });
+KeywordInsightSchema.index({ sessionId: 1 });
+
 // Compound index to ensure unique analysis for resume-job combination
 KeywordInsightSchema.index({ resumeId: 1, jobId: 1 }, { unique: true });
+
+// Validation to ensure either user or sessionId is present
+KeywordInsightSchema.pre('save', function(next) {
+  if (!this.user && !this.sessionId) {
+    return next(new Error('Either user or sessionId must be provided'));
+  }
+  next();
+});
 
 module.exports = mongoose.model('KeywordInsight', KeywordInsightSchema);

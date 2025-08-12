@@ -1,25 +1,15 @@
-import axios from 'axios';
+import axiosWithAuth from '../utils/axiosWithAuth';
 
 const API_URL = '/api/match/';
 
 // Compare resume with job description
 const compareResumeWithJob = async (matchData) => {
-  const config = {};
-  
-  // Add auth token if available
-  if (matchData.token) {
-    config.headers = {
-      Authorization: `Bearer ${matchData.token}`,
-    };
-  }
-
-  const response = await axios.post(
+  const response = await axiosWithAuth.post(
     API_URL + 'compare', 
     {
       resumeId: matchData.resumeId,
       jobId: matchData.jobId
-    }, 
-    config
+    }
   );
   
   return response.data;
@@ -27,22 +17,12 @@ const compareResumeWithJob = async (matchData) => {
 
 // Generate cover letter
 const generateCoverLetter = async (coverLetterData) => {
-  const config = {};
-  
-  // Add auth token if available
-  if (coverLetterData.token) {
-    config.headers = {
-      Authorization: `Bearer ${coverLetterData.token}`,
-    };
-  }
-
-  const response = await axios.post(
-    API_URL + 'cover-letter', 
+  const response = await axiosWithAuth.post(
+    API_URL + 'letter/generate', 
     {
       matchId: coverLetterData.matchId,
       customInstructions: coverLetterData.customInstructions || ''
-    }, 
-    config
+    }
   );
   
   return response.data;
@@ -50,50 +30,26 @@ const generateCoverLetter = async (coverLetterData) => {
 
 // Analyze resume for feedback
 const analyzeFeedback = async (feedbackData) => {
-  const config = {};
-  
-  // Add auth token if available
-  if (feedbackData.token) {
-    config.headers = {
-      Authorization: `Bearer ${feedbackData.token}`,
-    };
-  }
-
-  const response = await axios.post(
-    API_URL + 'feedback', 
+  const response = await axiosWithAuth.post(
+    API_URL + 'feedback/analyze', 
     {
       matchId: feedbackData.matchId,
       customInstructions: feedbackData.customInstructions || ''
-    }, 
-    config
+    }
   );
   
   return response.data;
 };
 
 // Get user matches
-const getUserMatches = async (token) => {
-  const config = {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  };
-
-  const response = await axios.get(API_URL, config);
+const getUserMatches = async () => {
+  const response = await axiosWithAuth.get(API_URL);
   return response.data;
 };
 
 // Get match by ID
-const getMatchById = async (matchId, token) => {
-  const config = token
-    ? {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    : {};
-
-  const response = await axios.get(API_URL + matchId, config);
+const getMatchById = async (matchId) => {
+  const response = await axiosWithAuth.get(API_URL + matchId);
   return response.data;
 };
 

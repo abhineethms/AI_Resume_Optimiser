@@ -8,7 +8,6 @@ import {
   Typography,
   Card,
   CardContent,
-  CardMedia,
   Stack,
   Paper,
   useTheme,

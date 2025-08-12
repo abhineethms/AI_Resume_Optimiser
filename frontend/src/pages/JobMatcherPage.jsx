@@ -10,9 +10,6 @@ import {
   Grid,
   Typography,
   Paper,
-  List,
-  ListItem,
-  ListItemText,
   Divider,
   Chip,
   Alert,
@@ -21,14 +18,12 @@ import {
   TextField,
   Tabs,
   Tab,
-  IconButton,
   Fade,
   Grow,
 } from '@mui/material';
 import {
   CloudUpload as UploadIcon,
   Check as CheckIcon,
-  Error as ErrorIcon,
   Description as FileIcon,
   TextFields as TextIcon,
 } from '@mui/icons-material';
@@ -56,7 +51,7 @@ const JobMatcherPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   
-  const { user } = useSelector((state) => state.auth);
+  // const { user } = useSelector((state) => state.auth); // May be needed for future features
   const { currentResume } = useSelector((state) => state.resume);
   const { currentJob, isLoading, isSuccess, isError, message } = useSelector(
     (state) => state.job

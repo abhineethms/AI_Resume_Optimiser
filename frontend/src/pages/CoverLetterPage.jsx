@@ -28,7 +28,6 @@ import {
 } from '@mui/icons-material';
 import {
   generateCoverLetter,
-  reset,
   setCurrentMatch
 } from '../redux/slices/matchSlice';
 import { setCurrentResume } from '../redux/slices/resumeSlice';
@@ -45,7 +44,6 @@ const CoverLetterPage = () => {
     currentMatch, 
     coverLetter, 
     isLoading, 
-    isSuccess, 
     isError, 
     message 
   } = useSelector((state) => state.match);

@@ -7,8 +7,9 @@ import { Box, CircularProgress, Typography } from '@mui/material';
 
 /**
  * Protected Route Component
- * Ensures that only authenticated users can access protected routes
- * Uses both Firebase Auth state and Redux state for reliable authentication checks
+ * Ensures that only authenticated users can access user-specific routes like dashboard
+ * Uses Firebase Auth state as the primary authentication source
+ * Note: Core app features (resume parsing, job matching, etc.) are accessible to guests
  */
 const ProtectedRoute = () => {
   const location = useLocation();
@@ -16,8 +17,8 @@ const ProtectedRoute = () => {
   // Get auth state from Firebase using react-firebase-hooks
   const [firebaseUser, firebaseLoading] = useAuthState(auth);
   
-  // Get auth state from Redux store
-  const { isAuthenticated, user: reduxUser } = useSelector((state) => state.auth);
+  // Get auth state from Redux store as fallback
+  const { user: reduxUser } = useSelector((state) => state.auth);
   
   // Show loading spinner while Firebase auth state is being determined
   if (firebaseLoading) {
@@ -39,8 +40,8 @@ const ProtectedRoute = () => {
     );
   }
   
-  // If neither Firebase nor Redux show the user is authenticated, redirect to login
-  if (!firebaseUser && !isAuthenticated && !reduxUser) {
+  // If user is not authenticated, redirect to login for user-specific routes
+  if (!firebaseUser && !reduxUser) {
     // Redirect to login page with return URL in state
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
