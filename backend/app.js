@@ -103,20 +103,31 @@ app.use('/api/keywords', keywordRoutes);
 // Serve static files from React build (for production)
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../frontend/build')));
-  
-  // Handle React routing - send all non-API requests to React app
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
-  });
-} else {
-  // Basic route for development
-  app.get('/', (req, res) => {
-    res.json({ message: 'AI Resume Optimizer API is running' });
-  });
 }
+
+// Basic route
+app.get('/', (req, res) => {
+  if (process.env.NODE_ENV === 'production') {
+    res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
+  } else {
+    res.json({ message: 'AI Resume Optimizer API is running' });
+  }
+});
 
 // Error handling middleware
 app.use(notFound);
 app.use(errorHandler);
+
+// Handle React routing - send all non-API requests to React app (AFTER error handling)
+if (process.env.NODE_ENV === 'production') {
+  app.use((req, res, next) => {
+    // Only serve index.html for non-API routes that weren't handled above
+    if (!req.path.startsWith('/api')) {
+      res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
+    } else {
+      next();
+    }
+  });
+}
 
 module.exports = app;
