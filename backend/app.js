@@ -118,14 +118,23 @@ app.get('/', (req, res) => {
 app.use(notFound);
 app.use(errorHandler);
 
-// Handle React routing - send all non-API requests to React app (AFTER error handling)
+// Handle React routing - serve index.html for non-API routes (AFTER error handling)
 if (process.env.NODE_ENV === 'production') {
-  app.get('*', (req, res) => {
-    // Only serve index.html for non-API routes that weren't handled above
-    if (!req.path.startsWith('/api')) {
+  // Add specific routes that should serve the React app
+  const reactRoutes = ['/login', '/dashboard', '/optimize', '/history', '/profile'];
+  
+  reactRoutes.forEach(route => {
+    app.get(route, (req, res) => {
+      res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
+    });
+  });
+  
+  // Handle any remaining non-API routes with a middleware
+  app.use((req, res, next) => {
+    if (!req.path.startsWith('/api') && !req.path.includes('.')) {
       res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
     } else {
-      res.status(404).json({ message: 'API endpoint not found' });
+      next();
     }
   });
 }
