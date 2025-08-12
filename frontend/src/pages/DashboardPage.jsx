@@ -30,7 +30,8 @@ import {
   Work as JobIcon,
   Compare as MatchIcon,
   Email as CoverLetterIcon,
-  Person as PersonIcon
+  Person as PersonIcon,
+  Psychology as KeywordIcon
 } from '@mui/icons-material';
 
 // Define the workflow steps for the app process
@@ -81,7 +82,9 @@ const DashboardPage = () => {
     stats: {
       resumesUploaded: 0,
       jobsAnalyzed: 0,
-      coverLettersGenerated: 0
+      matchesCreated: 0,
+      coverLettersGenerated: 0,
+      keywordInsights: 0
     },
     loading: true,
     error: null
@@ -96,9 +99,12 @@ const DashboardPage = () => {
         
         // Fetch dashboard data
         const response = await axiosWithAuth.get('/api/auth/dashboard');
+        console.log('Dashboard API response:', response.data);
+        
         setDashboardData(prevData => ({
           ...prevData,
-          ...response.data.data,
+          stats: response.data.data.stats || prevData.stats,
+          recentActivities: response.data.data.recentActivities || [],
           loading: false
         }));
       } catch (error) {
@@ -236,6 +242,22 @@ const DashboardPage = () => {
                       <Typography variant="body2">Cover Letters</Typography>
                       <Typography variant="h6" color="info.main" sx={{ fontWeight: 'bold' }}>
                         {dashboardData.stats.coverLettersGenerated}
+                      </Typography>
+                    </Box>
+                  }
+                />
+              </ListItem>
+              
+              <ListItem sx={{ px: 0 }}>
+                <ListItemIcon>
+                  <KeywordIcon color="warning" />
+                </ListItemIcon>
+                <ListItemText 
+                  primary={
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Typography variant="body2">Keyword Insights</Typography>
+                      <Typography variant="h6" color="warning.main" sx={{ fontWeight: 'bold' }}>
+                        {dashboardData.stats.keywordInsights || 0}
                       </Typography>
                     </Box>
                   }

@@ -203,11 +203,8 @@ const getUserDashboard = async (req, res) => {
   try {
     const userId = req.user._id;
     
-    // Get user with all related documents
-    const user = await User.findById(userId)
-      .populate('resumes', 'title createdAt')
-      .populate('jobs', 'title company createdAt')
-      .populate('matches', 'score resumeId jobId createdAt');
+    // Get user basic info
+    const user = await User.findById(userId);
     
     if (!user) {
       return res.status(404).json({
@@ -216,19 +213,57 @@ const getUserDashboard = async (req, res) => {
       });
     }
     
-    // Get counts
-    const counts = {
-      resumes: user.resumes ? user.resumes.length : 0,
-      jobs: user.jobs ? user.jobs.length : 0,
-      matches: user.matches ? user.matches.length : 0
+    // Get counts directly from each collection
+    const [resumeCount, jobCount, matchCount, keywordCount] = await Promise.all([
+      Resume.countDocuments({ user: userId }),
+      JobDescription.countDocuments({ user: userId }),
+      Match.countDocuments({ user: userId }),
+      KeywordInsight.countDocuments({ user: userId })
+    ]);
+    
+    // Get recent activities (5 most recent items of each type)
+    const [recentResumes, recentJobs, recentMatches] = await Promise.all([
+      Resume.find({ user: userId })
+        .select('title createdAt')
+        .sort({ createdAt: -1 })
+        .limit(5),
+      JobDescription.find({ user: userId })
+        .select('title company createdAt')
+        .sort({ createdAt: -1 })
+        .limit(5),
+      Match.find({ user: userId })
+        .select('matchPercentage createdAt')
+        .sort({ createdAt: -1 })
+        .limit(5)
+    ]);
+    
+    // Prepare stats object to match frontend expectations
+    const stats = {
+      resumesUploaded: resumeCount,
+      jobsAnalyzed: jobCount,
+      matchesCreated: matchCount,
+      coverLettersGenerated: 0, // TODO: Add cover letter model and count
+      keywordInsights: keywordCount
     };
     
-    // Get recent activity (5 most recent items of each type)
-    const activity = {
-      resumes: user.resumes ? user.resumes.slice(0, 5) : [],
-      jobs: user.jobs ? user.jobs.slice(0, 5) : [],
-      matches: user.matches ? user.matches.slice(0, 5) : []
-    };
+    // Prepare recent activities
+    const recentActivities = [
+      ...recentResumes.map(resume => ({
+        type: 'resume',
+        description: `Resume "${resume.title}" uploaded`,
+        timestamp: resume.createdAt
+      })),
+      ...recentJobs.map(job => ({
+        type: 'job',
+        description: `Job "${job.title}" at ${job.company || 'Unknown Company'} analyzed`,
+        timestamp: job.createdAt
+      })),
+      ...recentMatches.map(match => ({
+        type: 'match',
+        description: `Match analysis completed (${match.matchPercentage}% match)`,
+        timestamp: match.createdAt
+      }))
+    ].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 10);
     
     res.status(200).json({
       success: true,
@@ -242,8 +277,8 @@ const getUserDashboard = async (req, res) => {
           authProvider: user.authProvider,
           createdAt: user.createdAt
         },
-        counts,
-        activity
+        stats,
+        recentActivities
       }
     });
   } catch (error) {
