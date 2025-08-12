@@ -79,7 +79,7 @@ const App = () => {
             try {
               // The axiosWithAuth interceptor will automatically attach the token
               console.log('Verifying token with backend...');
-              const response = await axiosWithAuth.post('/api/auth/verify-token');
+              const response = await axiosWithAuth.post('/auth/verify-token');
               console.log('Token verification successful:', response.data);
             } catch (error) {
               console.error('Token verification failed:', error);

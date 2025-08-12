@@ -1,6 +1,6 @@
 import axiosWithAuth from '../utils/axiosWithAuth';
 
-const API_URL = '/api/match/';
+const API_URL = '/match/';
 
 // Compare resume with job description
 const compareResumeWithJob = async (matchData) => {

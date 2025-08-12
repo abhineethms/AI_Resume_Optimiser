@@ -32,7 +32,7 @@ export const register = createAsyncThunk(
       await userCredential.user.getIdToken();
       
       // Verify token with backend
-      await axiosWithAuth.post('/api/auth/verify-token');
+      await axiosWithAuth.post('/auth/verify-token');
       
       // Prepare user data
       const userData = {
@@ -87,7 +87,7 @@ export const login = createAsyncThunk(
       await userCredential.user.getIdToken();
       
       // Verify token with backend
-      await axiosWithAuth.post('/api/auth/verify-token');
+      await axiosWithAuth.post('/auth/verify-token');
       
       // Prepare user data
       const userData = {
@@ -143,7 +143,7 @@ export const googleLogin = createAsyncThunk(
       await userCredential.user.getIdToken();
       
       // Verify token with backend
-      await axiosWithAuth.post('/api/auth/verify-token');
+      await axiosWithAuth.post('/auth/verify-token');
       
       // Prepare user data
       const userData = {
@@ -175,7 +175,7 @@ export const fetchUserDetails = createAsyncThunk(
   'auth/fetchUserDetails',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axiosWithAuth.get('/api/auth/profile');
+      const response = await axiosWithAuth.get('/auth/profile');
       return response.data.data;
     } catch (error) {
       return rejectWithValue(error.message || 'Failed to fetch user details');

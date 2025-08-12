@@ -98,7 +98,7 @@ const DashboardPage = () => {
         await dispatch(fetchUserDetails());
         
         // Fetch dashboard data
-        const response = await axiosWithAuth.get('/api/auth/dashboard');
+        const response = await axiosWithAuth.get('/auth/dashboard');
         console.log('Dashboard API response:', response.data);
         
         setDashboardData(prevData => ({

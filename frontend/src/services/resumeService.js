@@ -1,6 +1,6 @@
 import axiosWithAuth from '../utils/axiosWithAuth';
 
-const API_URL = '/api/resume/';
+const API_URL = '/resume/';
 
 // Parse resume
 const parseResume = async (resumeData) => {

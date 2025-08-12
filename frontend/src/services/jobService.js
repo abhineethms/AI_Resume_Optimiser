@@ -1,6 +1,6 @@
 import axiosWithAuth from '../utils/axiosWithAuth';
 
-const API_URL = '/api/job/';
+const API_URL = '/job/';
 
 // Parse job description
 const parseJobDescription = async (jobData) => {

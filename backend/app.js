@@ -120,12 +120,12 @@ app.use(errorHandler);
 
 // Handle React routing - send all non-API requests to React app (AFTER error handling)
 if (process.env.NODE_ENV === 'production') {
-  app.use((req, res, next) => {
+  app.get('*', (req, res) => {
     // Only serve index.html for non-API routes that weren't handled above
     if (!req.path.startsWith('/api')) {
       res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
     } else {
-      next();
+      res.status(404).json({ message: 'API endpoint not found' });
     }
   });
 }

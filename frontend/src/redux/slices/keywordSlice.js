@@ -41,7 +41,7 @@ export const fetchKeywordInsights = createAsyncThunk(
     try {
       console.log(`Fetching keyword insights with resumeId: ${resumeId} and jobId: ${jobId}`);
       
-      const response = await axios.post('/api/keywords/analyze', {
+      const response = await axios.post('/keywords/analyze', {
         resumeId,
         jobId
       });

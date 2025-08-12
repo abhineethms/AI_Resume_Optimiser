@@ -24,7 +24,7 @@ export const migrateGuestDataToUser = async (userData) => {
     console.log('Starting guest data migration for session:', sessionData.sessionId);
     
     // Call backend API to migrate data
-    const response = await axiosWithAuth.post('/api/auth/migrate-guest-data', {
+    const response = await axiosWithAuth.post('/auth/migrate-guest-data', {
       sessionId: sessionData.sessionId,
       userData: {
         firebaseUid: userData.uid,
